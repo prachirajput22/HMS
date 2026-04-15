@@ -1,0 +1,124 @@
+<%- include('../partials/header') %>
+
+<div class="auth-page">
+  <div class="auth-card" style="max-width:520px;">
+    <div class="auth-header">
+      <div class="auth-logo"><i class="fas fa-user-plus"></i></div>
+      <h2>Create Account</h2>
+      <p class="auth-subtitle">Join MITS Hostel Management System</p>
+    </div>
+
+    <% if (errors && errors.length > 0) { %>
+      <% errors.forEach(e => { %>
+        <div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <%= e %></div>
+      <% }) %>
+    <% } %>
+
+    <form action="/register" method="POST" enctype="multipart/form-data">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="name"><i class="fas fa-user"></i> Full Name</label>
+          <input type="text" id="name" name="name" class="form-control" placeholder="John Doe" required />
+        </div>
+        <div class="form-group">
+          <label for="email"><i class="fas fa-envelope"></i> Email</label>
+          <input type="email" id="email" name="email" class="form-control" placeholder="your@email.com" required />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password"><i class="fas fa-lock"></i> Password</label>
+        <input type="password" id="password" name="password" class="form-control" placeholder="Min 6 characters" minlength="6" required />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="age"><i class="fas fa-birthday-cake"></i> Age</label>
+          <input type="number" id="age" name="age" class="form-control" min="16" max="30" placeholder="18" />
+        </div>
+        <div class="form-group">
+          <label for="gender"><i class="fas fa-venus-mars"></i> Gender</label>
+          <select id="gender" name="gender" class="form-control">
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="course"><i class="fas fa-graduation-cap"></i> Course</label>
+          <input type="text" id="course" name="course" class="form-control" placeholder="B.Tech CSE" />
+        </div>
+        <div class="form-group">
+          <label for="phone"><i class="fas fa-phone"></i> Phone</label>
+          <input type="text" id="phone" name="phone" class="form-control" placeholder="9876543210" />
+        </div>
+      </div>
+
+      <h3 style="font-size:0.95rem;margin:1.25rem 0 0.75rem;display:flex;align-items:center;gap:8px;">
+        <i class="fas fa-sliders-h" style="color:var(--primary)"></i> Roommate Preferences
+      </h3>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="sleepSchedule">Sleep Schedule</label>
+          <select id="sleepSchedule" name="sleepSchedule" class="form-control">
+            <option value="Early Bird">Early Bird</option>
+            <option value="Night Owl">Night Owl</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="food">Food Preference</label>
+          <select id="food" name="food" class="form-control">
+            <option value="Veg">Vegetarian</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="lifestyle">Lifestyle</label>
+          <select id="lifestyle" name="lifestyle" class="form-control">
+            <option value="Quiet">Quiet</option>
+            <option value="Social"> Social</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="profileImage"><i class="fas fa-camera"></i> Profile Photo</label>
+          <input type="file" id="profileImage" name="profileImage" class="form-control" accept="image/*" onchange="previewImage(this)" />
+        </div>
+      </div>
+
+      <img id="imagePreview" class="image-preview hidden" alt="Preview" />
+
+      <button type="submit" class="btn btn-primary btn-block btn-lg mt-2">
+        <i class="fas fa-user-plus"></i> Create Account
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      Already have an account? <a href="/login">Sign in</a>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
+
+<script>
+  function previewImage(input) {
+    const preview = document.getElementById('imagePreview');
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        preview.src = e.target.result;
+        preview.classList.remove('hidden');
+      }
+      reader.readAsDataURL(input.files[0]);
+    } else {
+      preview.src = '';
+      preview.classList.add('hidden');
+    }
+  }
+</script>

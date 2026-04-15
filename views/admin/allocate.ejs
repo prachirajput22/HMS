@@ -1,0 +1,107 @@
+<%- include('../partials/header') %>
+<div class="app-layout">
+  <%- include('../partials/adminSidebar') %>
+  <div class="main-content">
+    <%- include('../partials/topbar') %>
+    <div class="page-content">
+
+      <% if (success && success.length > 0) { %>
+        <% success.forEach(s => { %><div class="alert alert-success"><i class="fas fa-check-circle"></i> <%= s %></div><% }) %>
+      <% } %>
+      <% if (errors && errors.length > 0) { %>
+        <% errors.forEach(e => { %><div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <%= e %></div><% }) %>
+      <% } %>
+
+      <!-- Auto Allocate -->
+      <div class="glass-card mb-3">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+          <div>
+            <h3 style="margin-bottom:4px;"><i class="fas fa-magic" style="color:var(--primary)"></i> Smart Allocation</h3>
+            <p class="text-muted" style="font-size:0.85rem;">
+              Automatically allocate rooms to all waiting students using preference-based matching.
+              <strong><%= waitingUsers.length %></strong> student(s) waiting.
+            </p>
+          </div>
+          <% if (waitingUsers.length > 0) { %>
+            <form action="/admin/allocate/auto" method="POST">
+              <button type="submit" class="btn btn-primary" onclick="return confirm('Auto-allocate all waiting students?')">
+                <i class="fas fa-magic"></i> Auto Allocate All
+              </button>
+            </form>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Manual Allocation -->
+      <% if (waitingUsers.length > 0 && availableRooms.length > 0) { %>
+        <div class="glass-card mb-3">
+          <h3 style="margin-bottom:1rem;"><i class="fas fa-hand-pointer" style="color:var(--accent)"></i> Manual Allocation</h3>
+          <form action="/admin/allocate/manual" method="POST">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="userId">Select Student</label>
+                <select id="userId" name="userId" class="form-control" required>
+                  <% waitingUsers.forEach(u => { %>
+                    <option value="<%= u._id %>"><%= u.name %> (<%= u.email %>)</option>
+                  <% }) %>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="roomId">Select Room</label>
+                <select id="roomId" name="roomId" class="form-control" required>
+                  <% availableRooms.forEach(r => { %>
+                    <option value="<%= r._id %>">Room <%= r.roomNumber %> — Floor <%= r.floor %> (<%= r.occupants.length %>/<%= r.capacity %>)</option>
+                  <% }) %>
+                </select>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-key"></i> Allocate Room
+            </button>
+          </form>
+        </div>
+      <% } %>
+
+      <!-- Waiting Students -->
+      <div class="section-header">
+        <h3><i class="fas fa-users"></i> Waiting Students (<%= waitingUsers.length %>)</h3>
+      </div>
+      <% if (waitingUsers.length === 0) { %>
+        <div class="empty-state">
+          <i class="fas fa-check-circle"></i>
+          <h4>All Clear!</h4>
+          <p>No students are waiting for room allocation.</p>
+        </div>
+      <% } else { %>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Course</th>
+                <th>Sleep</th>
+                <th>Food</th>
+                <th>Lifestyle</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% waitingUsers.forEach(u => { %>
+                <tr>
+                  <td><strong><%= u.name %></strong></td>
+                  <td><%= u.email %></td>
+                  <td><%= u.course || '—' %></td>
+                  <td><span class="badge badge-info"><%= u.preferences.sleepSchedule %></span></td>
+                  <td><span class="badge badge-primary"><%= u.preferences.food %></span></td>
+                  <td><span class="badge badge-purple"><%= u.preferences.lifestyle %></span></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>

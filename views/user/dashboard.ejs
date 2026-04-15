@@ -1,0 +1,168 @@
+<%- include('../partials/header') %>
+<div class="app-layout">
+  <%- include('../partials/sidebar') %>
+  <div class="main-content">
+    <%- include('../partials/topbar') %>
+    <div class="page-content">
+
+      <% if (success && success.length > 0) { %>
+        <% success.forEach(s => { %>
+          <div class="alert alert-success"><i class="fas fa-check-circle"></i> <%= s %></div>
+        <% }) %>
+      <% } %>
+      <% if (errors && errors.length > 0) { %>
+        <% errors.forEach(e => { %>
+          <div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <%= e %></div>
+        <% }) %>
+      <% } %>
+
+      <!-- Welcome Banner -->
+      <div class="glass-card" style="background:var(--gradient-primary);color:#fff;margin-bottom:2rem;padding:2rem;">
+        <h2 style="color:#fff;margin-bottom:0.5rem;">
+          <i class="fas fa-hand-sparkles"></i> Welcome back, <%= user.name %>!
+        </h2>
+        <p style="opacity:0.85;font-size:0.92rem;">
+          <% if (user.roomStatus === 'Allocated') { %>
+            Your room is <strong><%= user.roomId ? user.roomId.roomNumber : 'N/A' %></strong> on Floor <%= user.roomId ? user.roomId.floor : 'N/A' %>
+          <% } else if (user.roomStatus === 'Waiting') { %>
+            You are on the waiting list for room allocation
+          <% } else { %>
+            You haven't requested a room yet. <a href="/request-room" style="color:#fff;text-decoration:underline;">Request now →</a>
+          <% } %>
+        </p>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon blue"><i class="fas fa-door-open"></i></div>
+          <div class="stat-info">
+            <h3><%= user.roomStatus %></h3>
+            <p>Room Status</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green"><i class="fas fa-bed"></i></div>
+          <div class="stat-info">
+            <h3><%= user.roomId ? user.roomId.roomNumber : '—' %></h3>
+            <p>Room Number</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon <%= fee && fee.status === 'Pending' ? 'orange' : 'green' %>">
+            <i class="fas fa-rupee-sign"></i>
+          </div>
+          <div class="stat-info">
+            <h3><%= fee ? '₹' + (fee.amount + fee.lateFee) : '₹0' %></h3>
+            <p><%= fee ? fee.status : 'No Fees' %></p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon purple"><i class="fas fa-bell"></i></div>
+          <div class="stat-info">
+            <h3 data-count="<%= unreadCount %>"><%= unreadCount %></h3>
+            <p>Unread Notifications</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Fee Warning -->
+      <% if (fee && fee.status === 'Pending') { %>
+        <div class="glass-card mb-3">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+            <div>
+              <h3 style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                <i class="fas fa-receipt" style="color:var(--warning)"></i> Pending Fee
+              </h3>
+              <p class="text-muted" style="font-size:0.85rem;">
+                Amount: <strong>₹<%= fee.amount %></strong>
+                <% if (fee.lateFee > 0) { %>
+                  + Late Fee: <strong style="color:var(--danger)">₹<%= fee.lateFee %></strong>
+                <% } %>
+                &nbsp;|&nbsp; Due: <%= new Date(fee.dueDate).toLocaleDateString('en-IN') %>
+              </p>
+              <% if (fee.lateFee > 0) { %>
+                <div class="late-fee-warning mt-1">
+                  <i class="fas fa-exclamation-triangle"></i> Late fee of ₹<%= fee.lateFee %> has been applied!
+                </div>
+              <% } %>
+            </div>
+            <a href="/payment" class="btn btn-primary">
+              <i class="fas fa-credit-card"></i> Pay Now
+            </a>
+          </div>
+        </div>
+      <% } %>
+
+      <!-- Roommate Compatibility -->
+      <% if (roommates && roommates.length > 0) { %>
+        <div class="section-header">
+          <h3><i class="fas fa-users"></i> Your Roommates</h3>
+        </div>
+        <% roommates.forEach(mate => { %>
+          <div class="roommate-card">
+            <div class="roommate-avatar">
+              <% if (mate.profileImage) { %>
+                <img src="<%= mate.profileImage %>" alt="<%= mate.name %>" />
+              <% } else { %>
+                <%= mate.name.charAt(0).toUpperCase() %>
+              <% } %>
+            </div>
+            <div class="roommate-info">
+              <h4><%= mate.name %></h4>
+              <div class="roommate-tags">
+                <span class="tag">
+                  <%= mate.preferences.sleepSchedule === 'Early Bird' ? '🌅' : '🌙' %>
+                  <%= mate.preferences.sleepSchedule %>
+                </span>
+                <span class="tag">
+                  <%= mate.preferences.food === 'Veg' ? '🥬' : '🍗' %>
+                  <%= mate.preferences.food %>
+                </span>
+                <span class="tag">
+                  <%= mate.preferences.lifestyle === 'Quiet' ? '🤫' : '🎉' %>
+                  <%= mate.preferences.lifestyle %>
+                </span>
+              </div>
+            </div>
+            <div class="compatibility-score">
+              <span class="score-value <%= mate.compatibility >= 80 ? 'high' : (mate.compatibility >= 50 ? 'medium' : 'low') %>">
+                <%= mate.compatibility %>%
+              </span>
+              <span>Match</span>
+              <div class="progress-bar">
+                <div class="progress-fill <%= mate.compatibility >= 80 ? 'high' : (mate.compatibility >= 50 ? 'medium' : 'low') %>"
+                     style="width:<%= mate.compatibility %>%"></div>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      <% } %>
+
+      <!-- Quick Links -->
+      <div class="section-header mt-3">
+        <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+      </div>
+      <div class="stats-grid" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr));">
+        <a href="/request-room" class="stat-card" style="text-decoration:none;cursor:pointer;">
+          <div class="stat-icon primary"><i class="fas fa-door-open"></i></div>
+          <div class="stat-info"><p style="font-weight:600;color:var(--text-primary);">Request Room</p></div>
+        </a>
+        <a href="/payment" class="stat-card" style="text-decoration:none;cursor:pointer;">
+          <div class="stat-icon green"><i class="fas fa-credit-card"></i></div>
+          <div class="stat-info"><p style="font-weight:600;color:var(--text-primary);">Make Payment</p></div>
+        </a>
+        <a href="/complaint" class="stat-card" style="text-decoration:none;cursor:pointer;">
+          <div class="stat-icon orange"><i class="fas fa-flag"></i></div>
+          <div class="stat-info"><p style="font-weight:600;color:var(--text-primary);">File Complaint</p></div>
+        </a>
+        <a href="/chat" class="stat-card" style="text-decoration:none;cursor:pointer;">
+          <div class="stat-icon purple"><i class="fas fa-comments"></i></div>
+          <div class="stat-info"><p style="font-weight:600;color:var(--text-primary);">Roommate Chat</p></div>
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>

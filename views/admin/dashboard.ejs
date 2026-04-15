@@ -1,0 +1,149 @@
+<%- include('../partials/header') %>
+<div class="app-layout">
+  <%- include('../partials/adminSidebar') %>
+  <div class="main-content">
+    <%- include('../partials/topbar') %>
+    <div class="page-content">
+
+      <% if (success && success.length > 0) { %>
+        <% success.forEach(s => { %><div class="alert alert-success"><i class="fas fa-check-circle"></i> <%= s %></div><% }) %>
+      <% } %>
+      <% if (errors && errors.length > 0) { %>
+        <% errors.forEach(e => { %><div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <%= e %></div><% }) %>
+      <% } %>
+
+      <!-- Stats Grid -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon blue"><i class="fas fa-users"></i></div>
+          <div class="stat-info">
+            <h3 data-count="<%= stats.totalStudents %>"><%= stats.totalStudents %></h3>
+            <p>Total Students</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green"><i class="fas fa-user-check"></i></div>
+          <div class="stat-info">
+            <h3 data-count="<%= stats.allocatedStudents %>"><%= stats.allocatedStudents %></h3>
+            <p>Allocated</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon orange"><i class="fas fa-clock"></i></div>
+          <div class="stat-info">
+            <h3 data-count="<%= stats.waitingCount %>"><%= stats.waitingCount %></h3>
+            <p>Waiting List</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon primary"><i class="fas fa-bed"></i></div>
+          <div class="stat-info">
+            <h3 data-count="<%= stats.totalRooms %>"><%= stats.totalRooms %></h3>
+            <p>Total Rooms</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green"><i class="fas fa-door-open"></i></div>
+          <div class="stat-info">
+            <h3 data-count="<%= stats.availableRooms %>"><%= stats.availableRooms %></h3>
+            <p>Available</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon purple"><i class="fas fa-rupee-sign"></i></div>
+          <div class="stat-info">
+            <h3>₹<%= stats.totalRevenue ? stats.totalRevenue.toLocaleString() : '0' %></h3>
+            <p>Revenue Collected</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon red"><i class="fas fa-exclamation-triangle"></i></div>
+          <div class="stat-info">
+            <h3 data-count="<%= stats.pendingFees %>"><%= stats.pendingFees %></h3>
+            <p>Pending Fees</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon orange"><i class="fas fa-flag"></i></div>
+          <div class="stat-info">
+            <h3 data-count="<%= stats.openComplaints %>"><%= stats.openComplaints %></h3>
+            <p>Open Complaints</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="chart-grid">
+        <div class="chart-card">
+          <h3><i class="fas fa-chart-pie"></i> Room Occupancy</h3>
+          <canvas id="occupancyChart"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3><i class="fas fa-chart-bar"></i> Payment Status</h3>
+          <canvas id="paymentChart"></canvas>
+        </div>
+      </div>
+
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          var chartData = <%- chartData %>;
+
+          // Occupancy Pie Chart
+          var ctx1 = document.getElementById('occupancyChart');
+          if (ctx1) {
+            new Chart(ctx1, {
+              type: 'doughnut',
+              data: {
+                labels: chartData.occupancy.labels,
+                datasets: [{
+                  data: chartData.occupancy.data,
+                  backgroundColor: ['#6366f1', '#10b981', '#ef4444', '#f59e0b'],
+                  borderWidth: 0,
+                  spacing: 2,
+                  borderRadius: 4,
+                }]
+              },
+              options: {
+                responsive: true,
+                plugins: {
+                  legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, font: { family: 'Inter', size: 12 } } }
+                },
+                cutout: '65%',
+              }
+            });
+          }
+
+          // Payment Bar Chart
+          var ctx2 = document.getElementById('paymentChart');
+          if (ctx2) {
+            new Chart(ctx2, {
+              type: 'bar',
+              data: {
+                labels: chartData.payments.labels,
+                datasets: [{
+                  label: 'Count',
+                  data: chartData.payments.data,
+                  backgroundColor: ['#10b981', '#f59e0b'],
+                  borderRadius: 8,
+                  borderSkipped: false,
+                }]
+              },
+              options: {
+                responsive: true,
+                plugins: {
+                  legend: { display: false }
+                },
+                scales: {
+                  y: { beginAtZero: true, grid: { display: false }, ticks: { font: { family: 'Inter' } } },
+                  x: { grid: { display: false }, ticks: { font: { family: 'Inter' } } }
+                }
+              }
+            });
+          }
+        });
+      </script>
+
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>

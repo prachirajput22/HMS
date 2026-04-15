@@ -1,0 +1,70 @@
+<!-- Top Navigation Bar -->
+<header class="topbar">
+  <div class="topbar-left">
+    <button class="hamburger" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+      <i class="fas fa-bars"></i>
+    </button>
+    <div class="topbar-title">
+      <h2><%= title %></h2>
+      <p>Madhav Institute of Technology and Science</p>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <% if (typeof admin === 'undefined') { %>
+    <div class="topbar-search">
+      <i class="fas fa-search"></i>
+      <input type="text" placeholder="Search..." />
+    </div>
+    <% } %>
+
+    <% if (typeof notifications !== 'undefined' && typeof unreadCount !== 'undefined') { %>
+    <div class="notif-bell-wrapper" style="position:relative;">
+      <button class="notif-bell" onclick="toggleNotifDropdown()" aria-label="Notifications">
+        <i class="fas fa-bell"></i>
+        <% if (unreadCount > 0) { %>
+          <span class="notif-badge"><%= unreadCount %></span>
+        <% } %>
+      </button>
+      <div class="notif-dropdown" id="notifDropdown">
+        <div class="notif-dropdown-header">
+          <i class="fas fa-bell"></i> Notifications
+        </div>
+        <% if (notifications.length === 0) { %>
+          <div class="notif-item"><span class="notif-msg">No notifications yet.</span></div>
+        <% } else { %>
+          <% notifications.forEach(n => { %>
+            <% const isRead = n.readBy && n.readBy.map(id => id.toString()).includes(session.userId ? session.userId.toString() : ''); %>
+            <div class="notif-item <%= isRead ? 'read' : 'unread' %>" data-id="<%= n._id %>" onclick="markRead('<%= n._id %>')">
+              <div class="notif-title"><%= n.title %></div>
+              <div class="notif-msg"><%= n.message %></div>
+              <div class="notif-time"><%= new Date(n.createdAt).toLocaleDateString('en-IN') %></div>
+            </div>
+          <% }) %>
+        <% } %>
+      </div>
+    </div>
+    <% } %>
+
+    <button class="dark-toggle" onclick="toggleDarkMode()" aria-label="Toggle dark mode">
+      <i class="fas fa-moon"></i>
+    </button>
+
+    <% if (typeof user !== 'undefined' && user) { %>
+      <a href="/profile" class="topbar-avatar" title="<%= user.name %>">
+        <% if (user.profileImage) { %>
+          <img src="<%= user.profileImage %>" alt="<%= user.name %>" />
+        <% } else { %>
+          <div class="avatar-initial"><%= user.name.charAt(0).toUpperCase() %></div>
+        <% } %>
+      </a>
+    <% } else if (typeof admin !== 'undefined' && admin) { %>
+      <a href="/admin/profile" class="topbar-avatar" title="<%= admin.name %>">
+        <% if (admin.profileImage) { %>
+          <img src="<%= admin.profileImage %>" alt="<%= admin.name %>" />
+        <% } else { %>
+          <div class="avatar-initial"><%= admin.name.charAt(0).toUpperCase() %></div>
+        <% } %>
+      </a>
+    <% } %>
+  </div>
+</header>

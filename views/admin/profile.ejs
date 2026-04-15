@@ -1,0 +1,54 @@
+<%- include('../partials/header') %>
+<div class="app-layout">
+  <%- include('../partials/adminSidebar') %>
+  <div class="main-content">
+    <%- include('../partials/topbar') %>
+    <div class="page-content">
+
+      <% if (success && success.length > 0) { %>
+        <% success.forEach(s => { %><div class="alert alert-success"><i class="fas fa-check-circle"></i> <%= s %></div><% }) %>
+      <% } %>
+      <% if (errors && errors.length > 0) { %>
+        <% errors.forEach(e => { %><div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <%= e %></div><% }) %>
+      <% } %>
+
+      <div class="glass-card" style="max-width:600px;">
+        <div class="profile-header">
+          <div class="profile-avatar">
+            <% if (admin.profileImage) { %>
+              <img src="<%= admin.profileImage %>" alt="<%= admin.name %>" />
+            <% } else { %>
+              <div class="avatar-initial"><%= admin.name.charAt(0).toUpperCase() %></div>
+            <% } %>
+          </div>
+          <div class="profile-info">
+            <h2><%= admin.name %></h2>
+            <p><i class="fas fa-envelope"></i> <%= admin.email %></p>
+            <p><i class="fas fa-shield-alt"></i> Administrator</p>
+          </div>
+        </div>
+
+        <form action="/admin/profile" method="POST" enctype="multipart/form-data">
+          <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" class="form-control" value="<%= admin.name %>" required />
+          </div>
+          <div class="form-group">
+            <label for="phone">Phone</label>
+            <input type="text" id="phone" name="phone" class="form-control" value="<%= admin.phone || '' %>" />
+          </div>
+          <div class="form-group">
+            <label for="profileImage">Profile Photo</label>
+            <input type="file" id="profileImage" name="profileImage" class="form-control" accept="image/*" onchange="previewImage(this)" />
+          </div>
+          <img id="imagePreview" class="image-preview hidden" alt="Preview" />
+          <button type="submit" class="btn btn-primary mt-2">
+            <i class="fas fa-save"></i> Save Changes
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>

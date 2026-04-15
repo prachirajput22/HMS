@@ -1,0 +1,81 @@
+<%- include('../partials/header') %>
+<div class="app-layout">
+  <%- include('../partials/adminSidebar') %>
+  <div class="main-content">
+    <%- include('../partials/topbar') %>
+    <div class="page-content">
+
+      <% if (success && success.length > 0) { %>
+        <% success.forEach(s => { %><div class="alert alert-success"><i class="fas fa-check-circle"></i> <%= s %></div><% }) %>
+      <% } %>
+      <% if (errors && errors.length > 0) { %>
+        <% errors.forEach(e => { %><div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <%= e %></div><% }) %>
+      <% } %>
+
+      <!-- Mark Attendance -->
+      <div class="glass-card mb-3">
+        <h3 style="margin-bottom:1rem;"><i class="fas fa-calendar-check" style="color:var(--primary)"></i> Mark Attendance — <%= today %></h3>
+        <form action="/admin/attendance" method="POST">
+          <input type="hidden" name="date" value="<%= today %>" />
+
+          <% if (users.length === 0) { %>
+            <p class="text-muted">No students registered.</p>
+          <% } else { %>
+            <div class="attendance-grid">
+              <% users.forEach(u => { %>
+                <% const isMarked = markedIds.includes(u._id.toString()); %>
+                <div class="attendance-card" style="<%= isMarked ? 'opacity:0.6;' : '' %>">
+                  <div class="student-name"><%= u.name %></div>
+                  <div class="attendance-radio">
+                    <label>
+                      <input type="radio" name="attendance[<%= u._id %>]" value="Present" <%= isMarked ? 'disabled' : '' %> checked />
+                      Present
+                    </label>
+                    <label>
+                      <input type="radio" name="attendance[<%= u._id %>]" value="Absent" <%= isMarked ? 'disabled' : '' %> />
+                      Absent
+                    </label>
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+            <button type="submit" class="btn btn-primary mt-2">
+              <i class="fas fa-check"></i> Save Attendance
+            </button>
+          <% } %>
+        </form>
+      </div>
+
+      <!-- Recent Records -->
+      <div class="section-header">
+        <h3><i class="fas fa-history"></i> Recent Records (Last 7 Days)</h3>
+      </div>
+      <% if (recentRecords.length === 0) { %>
+        <div class="empty-state">
+          <i class="fas fa-calendar"></i>
+          <h4>No Records</h4>
+          <p>Attendance records for the last 7 days will appear here.</p>
+        </div>
+      <% } else { %>
+        <div class="table-responsive">
+          <table>
+            <thead><tr><th>Student</th><th>Date</th><th>Status</th></tr></thead>
+            <tbody>
+              <% recentRecords.forEach(r => { %>
+                <tr>
+                  <td><%= r.userId ? r.userId.name : 'Unknown' %></td>
+                  <td><%= new Date(r.date).toLocaleDateString('en-IN') %></td>
+                  <td>
+                    <span class="badge badge-<%= r.status === 'Present' ? 'success' : 'danger' %>"><%= r.status %></span>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>

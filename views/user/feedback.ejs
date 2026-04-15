@@ -1,0 +1,56 @@
+<%- include('../partials/header') %>
+<div class="app-layout">
+  <%- include('../partials/sidebar') %>
+  <div class="main-content">
+    <%- include('../partials/topbar') %>
+    <div class="page-content">
+
+      <% if (success && success.length > 0) { %>
+        <% success.forEach(s => { %><div class="alert alert-success"><i class="fas fa-check-circle"></i> <%= s %></div><% }) %>
+      <% } %>
+      <% if (errors && errors.length > 0) { %>
+        <% errors.forEach(e => { %><div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <%= e %></div><% }) %>
+      <% } %>
+
+      <div class="glass-card" style="max-width:600px;">
+        <h3 style="margin-bottom:1.5rem;display:flex;align-items:center;gap:8px;">
+          <i class="fas fa-star" style="color:var(--warning)"></i> Your Feedback
+        </h3>
+
+        <% if (myFeedback) { %>
+          <div class="alert alert-info mb-3">
+            <i class="fas fa-info-circle"></i>
+            You already submitted feedback (Rating: <%= myFeedback.rating %>/5). You can update it below.
+          </div>
+        <% } %>
+
+        <form action="/feedback" method="POST">
+          <div class="form-group">
+            <label>How would you rate your hostel experience?</label>
+            <div class="star-rating">
+              <% for (let i = 5; i >= 1; i--) { %>
+                <input type="radio" id="star<%= i %>" name="rating" value="<%= i %>"
+                  <%= (myFeedback && myFeedback.rating === i) ? 'checked' : '' %>
+                  <%= (!myFeedback && i === 5) ? 'checked' : '' %>
+                  required />
+                <label for="star<%= i %>" title="<%= i %> stars"><i class="fas fa-star"></i></label>
+              <% } %>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="comment">Comments (optional)</label>
+            <textarea id="comment" name="comment" class="form-control"
+              placeholder="Share your experience, suggestions, or issues..."><%= myFeedback ? myFeedback.comment : '' %></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-paper-plane"></i> <%= myFeedback ? 'Update Feedback' : 'Submit Feedback' %>
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>

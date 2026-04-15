@@ -1,0 +1,106 @@
+<%- include('../partials/header') %>
+<div class="app-layout">
+  <%- include('../partials/sidebar') %>
+  <div class="main-content">
+    <%- include('../partials/topbar') %>
+    <div class="page-content">
+
+      <% if (success && success.length > 0) { %>
+        <% success.forEach(s => { %><div class="alert alert-success"><i class="fas fa-check-circle"></i> <%= s %></div><% }) %>
+      <% } %>
+      <% if (errors && errors.length > 0) { %>
+        <% errors.forEach(e => { %><div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <%= e %></div><% }) %>
+      <% } %>
+
+      <!-- Current Status -->
+      <div class="glass-card mb-3">
+        <div class="section-header" style="margin-bottom:1rem;">
+          <h3><i class="fas fa-info-circle"></i> Room Status</h3>
+          <span class="badge badge-<%= user.roomStatus === 'Allocated' ? 'success' : (user.roomStatus === 'Waiting' ? 'warning' : 'info') %>">
+            <span class="status-dot <%= user.roomStatus.toLowerCase().replace(' ', '-') %>"></span>
+            <%= user.roomStatus %>
+          </span>
+        </div>
+
+        <% if (user.roomStatus === 'Allocated' && user.roomId) { %>
+          <div class="stats-grid" style="grid-template-columns:repeat(auto-fill,minmax(140px,1fr));">
+            <div class="stat-card">
+              <div class="stat-icon blue"><i class="fas fa-door-open"></i></div>
+              <div class="stat-info">
+                <h3><%= user.roomId.roomNumber %></h3>
+                <p>Room Number</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon green"><i class="fas fa-layer-group"></i></div>
+              <div class="stat-info">
+                <h3><%= user.roomId.floor %></h3>
+                <p>Floor</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon purple"><i class="fas fa-users"></i></div>
+              <div class="stat-info">
+                <h3><%= user.roomId.occupants ? user.roomId.occupants.length : '—' %>/<%= user.roomId.capacity %></h3>
+                <p>Occupancy</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon orange"><i class="fas fa-rupee-sign"></i></div>
+              <div class="stat-info">
+                <h3>₹<%= user.roomId.monthlyFee %></h3>
+                <p>Monthly Fee</p>
+              </div>
+            </div>
+          </div>
+        <% } else if (user.roomStatus === 'Waiting') { %>
+          <div class="alert alert-warning">
+            <i class="fas fa-clock"></i> You're on the waiting list. You'll be allocated a room when one becomes available.
+          </div>
+        <% } else { %>
+          <p class="text-muted" style="margin-bottom:1rem;">You haven't requested a room yet. Our smart matching system will find the best room for you based on your preferences.</p>
+          <form action="/request-room" method="POST">
+            <button type="submit" class="btn btn-primary btn-lg">
+              <i class="fas fa-magic"></i> Request Smart Room Allocation
+            </button>
+          </form>
+        <% } %>
+      </div>
+
+      <!-- Roommate Compatibility -->
+      <% if (typeof roommates !== 'undefined' && roommates.length > 0) { %>
+        <div class="section-header">
+          <h3><i class="fas fa-heart"></i> Roommate Compatibility</h3>
+        </div>
+        <% roommates.forEach(mate => { %>
+          <div class="roommate-card">
+            <div class="roommate-avatar">
+              <% if (mate.profileImage) { %>
+                <img src="<%= mate.profileImage %>" alt="<%= mate.name %>" />
+              <% } else { %>
+                <%= mate.name.charAt(0).toUpperCase() %>
+              <% } %>
+            </div>
+            <div class="roommate-info">
+              <h4><%= mate.name %></h4>
+              <div class="roommate-tags">
+                <span class="tag"><%= mate.preferences.sleepSchedule === 'Early Bird' ? '🌅' : '🌙' %> <%= mate.preferences.sleepSchedule %></span>
+                <span class="tag"><%= mate.preferences.food === 'Veg' ? '🥬' : '🍗' %> <%= mate.preferences.food %></span>
+                <span class="tag"><%= mate.preferences.lifestyle === 'Quiet' ? '🤫' : '🎉' %> <%= mate.preferences.lifestyle %></span>
+              </div>
+            </div>
+            <div class="compatibility-score">
+              <span class="score-value <%= mate.compatibility >= 80 ? 'high' : (mate.compatibility >= 50 ? 'medium' : 'low') %>"><%= mate.compatibility %>%</span>
+              <span>Match</span>
+              <div class="progress-bar">
+                <div class="progress-fill <%= mate.compatibility >= 80 ? 'high' : (mate.compatibility >= 50 ? 'medium' : 'low') %>" style="width:<%= mate.compatibility %>%"></div>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      <% } %>
+
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>

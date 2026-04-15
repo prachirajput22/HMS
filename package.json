@@ -1,0 +1,27 @@
+{
+  "name": "mits-hostel-management",
+  "version": "1.0.0",
+  "description": "MITS Hostel Room Allocation & Fee Management System",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node app.js",
+    "seed": "node scripts/seed.js"
+  },
+  "keywords": ["hostel", "management", "mits"],
+  "author": "MITS",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "connect-flash": "^0.1.1",
+    "connect-mongo": "^6.0.0",
+    "dotenv": "^17.4.1",
+    "ejs": "^5.0.2",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "method-override": "^3.0.0",
+    "mongoose": "^9.4.1",
+    "multer": "^2.1.1",
+    "uuid": "^13.0.0"
+  }
+}

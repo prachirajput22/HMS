@@ -1,0 +1,68 @@
+<!-- Admin Sidebar Navigation -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon"><i class="fas fa-shield-alt"></i></div>
+    <div>
+      <span>MITS Admin</span>
+      <small>Hostel Management</small>
+    </div>
+  </div>
+  <ul class="sidebar-nav">
+    <li>
+      <a href="/admin/dashboard" class="<%= (typeof title !== 'undefined' && title === 'Admin Dashboard') ? 'active' : '' %>">
+        <i class="fas fa-tachometer-alt"></i> Dashboard
+      </a>
+    </li>
+    <li>
+      <a href="/admin/profile" class="<%= (typeof title !== 'undefined' && title === 'Admin Profile') ? 'active' : '' %>">
+        <i class="fas fa-user-shield"></i> Profile
+      </a>
+    </li>
+    <li>
+      <a href="/admin/rooms" class="<%= (typeof title !== 'undefined' && title === 'Room Management') ? 'active' : '' %>">
+        <i class="fas fa-bed"></i> Rooms
+      </a>
+    </li>
+    <li>
+      <a href="/admin/allocate" class="<%= (typeof title !== 'undefined' && title === 'Room Allocation') ? 'active' : '' %>">
+        <i class="fas fa-key"></i> Allocate
+      </a>
+    </li>
+    <li>
+      <a href="/admin/payments" class="<%= (typeof title !== 'undefined' && title === 'Payment Management') ? 'active' : '' %>">
+        <i class="fas fa-rupee-sign"></i> Payments
+      </a>
+    </li>
+    <li>
+      <a href="/admin/complaints" class="<%= (typeof title !== 'undefined' && title === 'Complaint Management') ? 'active' : '' %>">
+        <i class="fas fa-flag"></i> Complaints
+      </a>
+    </li>
+    <li>
+      <a href="/admin/attendance" class="<%= (typeof title !== 'undefined' && title === 'Attendance Management') ? 'active' : '' %>">
+        <i class="fas fa-calendar-check"></i> Attendance
+      </a>
+    </li>
+    <li>
+      <a href="/admin/notifications" class="<%= (typeof title !== 'undefined' && title === 'Notifications') ? 'active' : '' %>">
+        <i class="fas fa-bell"></i> Notifications
+      </a>
+    </li>
+    <li>
+      <a href="/admin/feedback" class="<%= (typeof title !== 'undefined' && title === 'Feedback Analysis') ? 'active' : '' %>">
+        <i class="fas fa-star"></i> Feedback
+      </a>
+    </li>
+    <li>
+      <a href="/admin/search" class="<%= (typeof title !== 'undefined' && title === 'Student Search') ? 'active' : '' %>">
+        <i class="fas fa-search"></i> Search
+      </a>
+    </li>
+    <li>
+      <a href="/admin/logout" class="logout-link">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </a>
+    </li>
+  </ul>
+</nav>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>

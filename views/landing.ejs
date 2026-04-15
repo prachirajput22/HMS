@@ -1,0 +1,244 @@
+<%- include('partials/header') %>
+
+<!-- Navbar -->
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="/" class="brand">
+            <i class="fa-solid fa-building-user"></i> MITS Hostel
+        </a>
+        <div class="nav-links">
+            <a href="/login">Student Login</a>
+            <a href="/admin/login">Admin Login</a>
+            <a href="/register" class="btn btn-primary">Get Started</a>
+        </div>
+    </div>
+</nav>
+
+<section class="hero">
+    <div class="container">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <i class="fa-solid fa-sparkles"></i> Madhav Institute of Technology and Science
+            </div>
+            <h1>Smart <span class="gradient-text">Hostel Management</span> System</h1>
+            <p>A complete full-stack solution for modern room allocation, automated fee management, and intelligent matching algorithms to create the perfect living environment.</p>
+            <div class="hero-cta">
+                <a href="/register" class="btn btn-primary btn-lg">Student Registration <i class="fa-solid fa-arrow-right"></i></a>
+                <a href="/admin/login" class="btn btn-secondary btn-lg">Admin Portal</a>
+            </div>
+        </div>
+        
+        <!-- Dashboard Preview -->
+        <div class="hero-dashboard-preview">
+            <div class="preview-frame">
+                <div class="preview-bar">
+                    <div class="preview-dot red"></div>
+                    <div class="preview-dot yellow"></div>
+                    <div class="preview-dot green"></div>
+                </div>
+                <div class="preview-body">
+                    <div class="preview-stat">
+                        <div class="pval">500+</div>
+                        <div class="plbl">Active Students</div>
+                    </div>
+                    <div class="preview-stat">
+                        <div class="pval">100+</div>
+                        <div class="plbl">Available Rooms</div>
+                    </div>
+                    <div class="preview-stat">
+                        <div class="pval">98%</div>
+                        <div class="plbl">Fee Collection</div>
+                    </div>
+                    <div class="preview-stat">
+                        <div class="pval">24/7</div>
+                        <div class="plbl">Support</div>
+                    </div>
+                    <div class="preview-chart">
+                        <div class="preview-bar-item" style="height: 40%"></div>
+                        <div class="preview-bar-item" style="height: 65%"></div>
+                        <div class="preview-bar-item" style="height: 85%"></div>
+                        <div class="preview-bar-item" style="height: 50%"></div>
+                        <div class="preview-bar-item" style="height: 95%"></div>
+                        <div class="preview-bar-item" style="height: 70%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Strip -->
+<div class="stats-strip">
+    <div class="container stats-strip-grid">
+        <div class="strip-stat">
+            <i class="fa-solid fa-building-user sicon"></i>
+            <span class="snum">500+</span>
+            <span class="slbl">Students Managed</span>
+        </div>
+        <div class="strip-stat">
+            <i class="fa-solid fa-door-open sicon"></i>
+            <span class="snum">100+</span>
+            <span class="slbl">Rooms Configured</span>
+        </div>
+        <div class="strip-stat">
+            <i class="fa-solid fa-chart-line sicon"></i>
+            <span class="snum">98%</span>
+            <span class="slbl">Payment Success</span>
+        </div>
+        <div class="strip-stat">
+            <i class="fa-solid fa-clipboard-check sicon"></i>
+            <span class="snum">2K+</span>
+            <span class="slbl">Complaints Resolved</span>
+        </div>
+    </div>
+</div>
+
+<section class="features-section container">
+    <div class="section-header">
+        <span class="section-label">Features</span>
+        <h2 class="section-title">Everything you need to run your hostel</h2>
+        <p class="section-sub">A powerful suite of tools designed to replace messy spreadsheets with automated and intelligent workflows.</p>
+    </div>
+    
+    <div class="grid grid-cols-3">
+        <div class="feature-card">
+            <div class="feature-icon"><i class="fa-solid fa-bed"></i></div>
+            <h3>Smart Room Matching</h3>
+            <p>Find the perfect roommates using our smart preference-matching algorithm based on sleeping habits and lifestyle.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon" style="color: var(--warning); background: var(--warning-light);"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+            <h3>Automated Fee Setup</h3>
+            <p>Track payments seamlessly with auto calculation of late fees and beautiful generated receipts.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon" style="color: var(--success); background: var(--success-light);"><i class="fa-solid fa-comment-dots"></i></div>
+            <h3>Real-time Roommate Chat</h3>
+            <p>Communicate securely and efficiently with your roommates securely within the platform using web sockets.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Advanced Features Split -->
+<section class="split-section" style="background: var(--bg-card);">
+    <div class="container split-grid">
+        <div class="split-content">
+            <span class="section-label">Allocation Engine</span>
+            <h2 class="section-title">No more manual room assignments.</h2>
+            <p style="color: var(--text-muted); line-height: 1.7;">Our intelligent algorithm takes the headache out of room allocation. By analyzing dietary preferences, sleep schedules, and lifestyle choices, we match compatible roommates automatically, reducing conflict by over 60%.</p>
+            
+            <div class="feature-list">
+                <div class="feature-list-item">
+                    <div class="feature-list-icon"><i class="fa-solid fa-check"></i></div>
+                    <div>
+                        <h5>Lifestyle Matching Matrix</h5>
+                        <p>Aligns Early birds with Early birds logically.</p>
+                    </div>
+                </div>
+                <div class="feature-list-item">
+                    <div class="feature-list-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                    <div>
+                        <h5>Automated Waitlisting</h5>
+                        <p>Puts pending requests in queue until rooms open.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="split-visual">
+            <!-- Cards removed -->
+        </div>
+    </div>
+</section>
+
+<section class="how-section">
+    <div class="container text-center">
+        <div class="section-header">
+            <h2 class="section-title">How it Works</h2>
+            <p class="section-sub">A streamlined onboarding process getting students settled in minutes.</p>
+        </div>
+        <div class="steps-grid">
+            <div class="step-item">
+                <div class="step-num">1</div>
+                <h4>Register Profile</h4>
+                <p>Create your secure student account with verified details.</p>
+            </div>
+            <div class="step-item">
+                <div class="step-num">2</div>
+                <h4>Set Preferences</h4>
+                <p>Input metadata on lifestyle to feed the smart algorithm.</p>
+            </div>
+            <div class="step-item">
+                <div class="step-num">3</div>
+                <h4>Request Room</h4>
+                <p>Join the dynamic waitlist pending admin execution.</p>
+            </div>
+            <div class="step-item">
+                <div class="step-num">4</div>
+                <div class="step-num" style="background: linear-gradient(135deg, var(--primary), var(--success)); margin-top: -75px">✓</div>
+                <h4>Auto Allocation</h4>
+                <p>Get assigned your perfect room when the admin triggers assignment.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials -->
+<section class="testi-section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-label">Testimonials</span>
+            <h2 class="section-title">Loved by administrators and students</h2>
+        </div>
+        <div class="testi-grid">
+            <div class="testi-card">
+                <div class="testi-stars">★★★★★</div>
+                <p class="testi-text">"Before this system, I was pairing roommates using spreadsheets and post-it notes. Setup was painful. Now it’s one-click and complaints have dropped dramatically."</p>
+                <div class="testi-author">
+                    <div class="testi-avatar">JA</div>
+                    <div>
+                        <div class="testi-name">James Alistar</div>
+                        <div class="testi-role">Hostel Administrator</div>
+                    </div>
+                </div>
+            </div>
+            <div class="testi-card">
+                <div class="testi-stars">★★★★★</div>
+                <p class="testi-text">"The real-time chat with roommates before move-in day let us divide up who was bringing the fridge and who brought the microwave. Lifesaver."</p>
+                <div class="testi-author">
+                    <div class="testi-avatar" style="background: linear-gradient(135deg, var(--primary), var(--success));">SK</div>
+                    <div>
+                        <div class="testi-name">Sarah Krebs</div>
+                        <div class="testi-role">Computer Science Student</div>
+                    </div>
+                </div>
+            </div>
+            <div class="testi-card">
+                <div class="testi-stars">★★★★★</div>
+                <p class="testi-text">"Fee reminders right to my dashboard meant no more late fines for forgetting rent. The interface is just incredibly fast and fluid."</p>
+                <div class="testi-author">
+                    <div class="testi-avatar" style="background: linear-gradient(135deg, var(--warning), #D97706);">MR</div>
+                    <div>
+                        <div class="testi-name">Mark Reus</div>
+                        <div class="testi-role">Business Major</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="container">
+        <div class="cta-content">
+            <h2>Ready to transform your hostel management?</h2>
+            <p>Join dozens of institutions utilizing our completely automated SaaS workflow.</p>
+            <div class="cta-btns">
+                <a href="/register" class="btn btn-white btn-lg">Get Started Now</a>
+                <a href="/admin/login" class="btn btn-outline-white btn-lg">Admin Login</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<%- include('partials/footer') %>

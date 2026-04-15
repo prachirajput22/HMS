@@ -1,0 +1,137 @@
+<%- include('../partials/header') %>
+<div class="app-layout">
+  <%- include('../partials/adminSidebar') %>
+  <div class="main-content">
+    <%- include('../partials/topbar') %>
+    <div class="page-content">
+
+      <% if (success && success.length > 0) { %>
+        <% success.forEach(s => { %><div class="alert alert-success"><i class="fas fa-check-circle"></i> <%= s %></div><% }) %>
+      <% } %>
+      <% if (errors && errors.length > 0) { %>
+        <% errors.forEach(e => { %><div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <%= e %></div><% }) %>
+      <% } %>
+
+      <!-- Add Room -->
+      <div class="section-header">
+        <h3><i class="fas fa-bed"></i> All Rooms (<%= rooms.length %>)</h3>
+        <button class="btn btn-primary" onclick="openModal('addRoomModal')">
+          <i class="fas fa-plus"></i> Add Room
+        </button>
+      </div>
+
+      <div class="room-grid">
+        <% rooms.forEach(room => { %>
+          <div class="room-card">
+            <div class="room-header">
+              <div class="room-number"><i class="fas fa-door-open"></i> Room <%= room.roomNumber %></div>
+              <span class="badge badge-<%= room.status === 'Available' ? 'success' : (room.status === 'Full' ? 'danger' : 'warning') %>">
+                <span class="status-dot <%= room.status.toLowerCase() %>"></span> <%= room.status %>
+              </span>
+            </div>
+            <div class="room-detail"><span>Floor</span><span><%= room.floor %></span></div>
+            <div class="room-detail"><span>Capacity</span><span><%= room.occupants.length %>/<%= room.capacity %></span></div>
+            <div class="room-detail"><span>Monthly Fee</span><span>₹<%= room.monthlyFee %></span></div>
+            <% if (room.occupants.length > 0) { %>
+              <div class="room-occupants">
+                <% room.occupants.forEach(occ => { %>
+                  <span class="occupant-tag"><i class="fas fa-user"></i> <%= occ.name %></span>
+                <% }) %>
+              </div>
+            <% } %>
+            <div class="room-actions">
+              <button class="btn btn-sm btn-secondary" onclick="openEditModal({id:'<%= room._id %>',roomNumber:'<%= room.roomNumber %>',floor:<%= room.floor %>,capacity:<%= room.capacity %>,status:'<%= room.status %>',monthlyFee:<%= room.monthlyFee %>})">
+                <i class="fas fa-edit"></i> Edit
+              </button>
+              <% if (room.occupants.length === 0) { %>
+                <form action="/admin/rooms/<%= room._id %>/delete" method="POST" style="display:inline;" onsubmit="return confirm('Delete this room?')">
+                  <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                </form>
+              <% } %>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+
+      <!-- Add Room Modal -->
+      <div id="addRoomModal" class="modal-overlay hidden">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Add New Room</h3>
+            <button class="modal-close" onclick="closeModal('addRoomModal')">&times;</button>
+          </div>
+          <form action="/admin/rooms" method="POST">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="roomNumber">Room Number</label>
+                <input type="text" id="roomNumber" name="roomNumber" class="form-control" placeholder="e.g., 101" required />
+              </div>
+              <div class="form-group">
+                <label for="floor">Floor</label>
+                <input type="number" id="floor" name="floor" class="form-control" min="1" placeholder="1" required />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="capacity">Capacity</label>
+                <input type="number" id="capacity" name="capacity" class="form-control" min="1" value="2" required />
+              </div>
+              <div class="form-group">
+                <label for="monthlyFee">Monthly Fee (₹)</label>
+                <input type="number" id="monthlyFee" name="monthlyFee" class="form-control" value="5000" required />
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">
+              <i class="fas fa-plus"></i> Create Room
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Edit Room Modal -->
+      <div id="editRoomModal" class="modal-overlay hidden">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Edit Room</h3>
+            <button class="modal-close" onclick="closeModal('editRoomModal')">&times;</button>
+          </div>
+          <form id="editRoomForm" action="" method="POST">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="editRoomNumber">Room Number</label>
+                <input type="text" id="editRoomNumber" name="roomNumber" class="form-control" required />
+              </div>
+              <div class="form-group">
+                <label for="editFloor">Floor</label>
+                <input type="number" id="editFloor" name="floor" class="form-control" min="1" required />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="editCapacity">Capacity</label>
+                <input type="number" id="editCapacity" name="capacity" class="form-control" min="1" required />
+              </div>
+              <div class="form-group">
+                <label for="editMonthlyFee">Monthly Fee (₹)</label>
+                <input type="number" id="editMonthlyFee" name="monthlyFee" class="form-control" required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="editStatus">Status</label>
+              <select id="editStatus" name="status" class="form-control">
+                <option value="Available">Available</option>
+                <option value="Full">Full</option>
+                <option value="Maintenance">Maintenance</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">
+              <i class="fas fa-save"></i> Update Room
+            </button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>

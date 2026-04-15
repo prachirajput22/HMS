@@ -1,0 +1,82 @@
+<%- include('../partials/header') %>
+<div class="app-layout">
+  <%- include('../partials/sidebar') %>
+  <div class="main-content">
+    <%- include('../partials/topbar') %>
+    <div class="page-content">
+
+      <% if (success && success.length > 0) { %>
+        <% success.forEach(s => { %><div class="alert alert-success"><i class="fas fa-check-circle"></i> <%= s %></div><% }) %>
+      <% } %>
+      <% if (errors && errors.length > 0) { %>
+        <% errors.forEach(e => { %><div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <%= e %></div><% }) %>
+      <% } %>
+
+      <% if (fees.length === 0) { %>
+        <div class="empty-state">
+          <i class="fas fa-receipt"></i>
+          <h4>No Fee Records</h4>
+          <p>You don't have any fee records yet. Request a room to get started.</p>
+        </div>
+      <% } else { %>
+        <div class="payment-grid">
+          <% fees.forEach(fee => { %>
+            <div class="payment-card">
+              <div class="payment-header">
+                <div class="payment-amount">₹<%= fee.amount + fee.lateFee %></div>
+                <span class="badge badge-<%= fee.status === 'Paid' ? 'success' : 'warning' %>">
+                  <i class="fas fa-<%= fee.status === 'Paid' ? 'check-circle' : 'clock' %>"></i>
+                  <%= fee.status %>
+                </span>
+              </div>
+              <div class="payment-details">
+                <div class="payment-detail">
+                  <span>Base Amount</span>
+                  <span>₹<%= fee.amount %></span>
+                </div>
+                <% if (fee.lateFee > 0) { %>
+                  <div class="payment-detail" style="color:var(--danger);">
+                    <span>Late Fee</span>
+                    <span>₹<%= fee.lateFee %></span>
+                  </div>
+                <% } %>
+                <div class="payment-detail">
+                  <span>Receipt ID</span>
+                  <span><%= fee.receiptId %></span>
+                </div>
+                <div class="payment-detail">
+                  <span>Due Date</span>
+                  <span><%= new Date(fee.dueDate).toLocaleDateString('en-IN') %></span>
+                </div>
+                <% if (fee.paidAt) { %>
+                  <div class="payment-detail">
+                    <span>Paid On</span>
+                    <span><%= new Date(fee.paidAt).toLocaleDateString('en-IN') %></span>
+                  </div>
+                <% } %>
+              </div>
+
+              <% if (fee.lateFee > 0 && fee.status === 'Pending') { %>
+                <div class="late-fee-warning">
+                  <i class="fas fa-exclamation-triangle"></i>
+                  Late fee of ₹<%= fee.lateFee %> has been applied!
+                </div>
+              <% } %>
+
+              <% if (fee.status === 'Pending') { %>
+                <form action="/payment" method="POST" style="margin-top:1rem;">
+                  <input type="hidden" name="feeId" value="<%= fee._id %>" />
+                  <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fas fa-credit-card"></i> Pay ₹<%= fee.amount + fee.lateFee %>
+                  </button>
+                </form>
+              <% } %>
+            </div>
+          <% }) %>
+        </div>
+      <% } %>
+
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>

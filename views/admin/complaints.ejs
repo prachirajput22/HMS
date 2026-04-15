@@ -1,0 +1,119 @@
+<%- include('../partials/header') %>
+<div class="app-layout">
+  <%- include('../partials/adminSidebar') %>
+  <div class="main-content">
+    <%- include('../partials/topbar') %>
+    <div class="page-content">
+
+      <% if (success && success.length > 0) { %>
+        <% success.forEach(s => { %><div class="alert alert-success"><i class="fas fa-check-circle"></i> <%= s %></div><% }) %>
+      <% } %>
+      <% if (errors && errors.length > 0) { %>
+        <% errors.forEach(e => { %><div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <%= e %></div><% }) %>
+      <% } %>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="public" onclick="switchTab('public')">🌐 Public (<%= publicComplaints.length %>)</button>
+        <button class="tab-btn" data-tab="private" onclick="switchTab('private')">🔒 Private (<%= privateComplaints.length %>)</button>
+      </div>
+
+      <!-- Public Complaints -->
+      <div id="tab-public" class="tab-content active">
+        <% if (publicComplaints.length === 0) { %>
+          <div class="empty-state"><i class="fas fa-flag"></i><h4>No Public Complaints</h4></div>
+        <% } else { %>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr><th>Student</th><th>Category</th><th>Description</th><th>Votes</th><th>Priority</th><th>Status</th><th>Action</th></tr>
+              </thead>
+              <tbody>
+                <% publicComplaints.forEach(c => { %>
+                  <% const priority = c.voteCount >= 6 ? 'High' : (c.voteCount >= 3 ? 'Medium' : 'Low'); %>
+                  <tr>
+                    <td><strong><%= c.userId ? c.userId.name : 'Unknown' %></strong></td>
+                    <td><%= c.category %></td>
+                    <td style="max-width:250px;"><%= c.description.substring(0, 100) %><%= c.description.length > 100 ? '...' : '' %></td>
+                    <td><span class="badge badge-info"><%= c.voteCount %></span></td>
+                    <td><span class="badge priority-<%= priority.toLowerCase() %>"><%= priority %></span></td>
+                    <td><span class="badge badge-<%= c.status === 'Resolved' ? 'success' : (c.status === 'In Progress' ? 'warning' : 'info') %>"><%= c.status %></span></td>
+                    <td>
+                      <form action="/admin/complaints/<%= c._id %>/status" method="POST" style="display:flex;gap:4px;">
+                        <select name="status" class="form-control" style="width:auto;padding:4px 8px;font-size:0.78rem;">
+                          <option value="Open" <%= c.status === 'Open' ? 'selected' : '' %>>Open</option>
+                          <option value="In Progress" <%= c.status === 'In Progress' ? 'selected' : '' %>>In Progress</option>
+                          <option value="Resolved" <%= c.status === 'Resolved' ? 'selected' : '' %>>Resolved</option>
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-primary">Update</button>
+                      </form>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Private Complaints -->
+      <div id="tab-private" class="tab-content">
+        <% if (privateComplaints.length === 0) { %>
+          <div class="empty-state"><i class="fas fa-lock"></i><h4>No Private Complaints</h4></div>
+        <% } else { %>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr><th>Student</th><th>Category</th><th>Room</th><th>Description</th><th>Room Change</th><th>Status</th><th>Action</th></tr>
+              </thead>
+              <tbody>
+                <% privateComplaints.forEach(c => { %>
+                  <tr>
+                    <td><strong><%= c.userId ? c.userId.name : 'Unknown' %></strong></td>
+                    <td><%= c.category %></td>
+                    <td><%= c.roomNumber || '—' %></td>
+                    <td style="max-width:200px;"><%= c.description.substring(0, 80) %><%= c.description.length > 80 ? '...' : '' %></td>
+                    <td>
+                      <% if (c.isRoomChangeRequested) { %>
+                        <span class="badge badge-<%= c.roomChangeStatus === 'Approved' ? 'success' : (c.roomChangeStatus === 'Rejected' ? 'danger' : 'warning') %>">
+                          <%= c.roomChangeStatus %>
+                        </span>
+                        <% if (c.roomChangeStatus === 'Pending') { %>
+                          <div style="display:flex;gap:4px;margin-top:4px;">
+                            <form action="/admin/complaints/<%= c._id %>/room-change" method="POST">
+                              <input type="hidden" name="action" value="approve" />
+                              <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                            </form>
+                            <form action="/admin/complaints/<%= c._id %>/room-change" method="POST">
+                              <input type="hidden" name="action" value="reject" />
+                              <button type="submit" class="btn btn-sm btn-danger">Reject</button>
+                            </form>
+                          </div>
+                        <% } %>
+                      <% } else { %>
+                        <span class="text-muted">—</span>
+                      <% } %>
+                    </td>
+                    <td><span class="badge badge-<%= c.status === 'Resolved' ? 'success' : (c.status === 'In Progress' ? 'warning' : 'info') %>"><%= c.status %></span></td>
+                    <td>
+                      <form action="/admin/complaints/<%= c._id %>/status" method="POST" style="display:flex;gap:4px;">
+                        <select name="status" class="form-control" style="width:auto;padding:4px 8px;font-size:0.78rem;">
+                          <option value="Open" <%= c.status === 'Open' ? 'selected' : '' %>>Open</option>
+                          <option value="In Progress" <%= c.status === 'In Progress' ? 'selected' : '' %>>In Progress</option>
+                          <option value="Resolved" <%= c.status === 'Resolved' ? 'selected' : '' %>>Resolved</option>
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-primary">Update</button>
+                      </form>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        <% } %>
+      </div>
+
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>

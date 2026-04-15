@@ -1,0 +1,77 @@
+<%- include('../partials/header') %>
+<div class="app-layout">
+  <%- include('../partials/sidebar') %>
+  <div class="main-content">
+    <%- include('../partials/topbar') %>
+    <div class="page-content">
+
+      <div class="chat-container">
+        <div class="chat-header">
+          <div class="stat-icon blue" style="width:40px;height:40px;font-size:1rem;">
+            <i class="fas fa-comments"></i>
+          </div>
+          <div class="chat-room-info">
+            <h3>Room <%= room.roomNumber %> Chat</h3>
+            <span>
+              <% if (roommates.length > 0) { %>
+                <%= roommates.map(r => r.name).join(', ') %>
+              <% } else { %>
+                No other roommates
+              <% } %>
+            </span>
+          </div>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+          <% if (messages.length === 0) { %>
+            <div class="empty-state" style="padding:2rem;">
+              <i class="fas fa-comments" style="font-size:2.5rem;"></i>
+              <h4>No messages yet</h4>
+              <p>Start the conversation with your roommates!</p>
+            </div>
+          <% } else { %>
+            <% messages.forEach(msg => { %>
+              <% const isMe = msg.sender._id.toString() === user._id.toString(); %>
+              <div class="chat-msg <%= isMe ? 'chat-msg-me' : 'chat-msg-other' %>">
+                <% if (!isMe) { %>
+                  <div class="chat-avatar">
+                    <% if (msg.sender.profileImage) { %>
+                      <img src="<%= msg.sender.profileImage %>" alt="<%= msg.sender.name %>" />
+                    <% } else { %>
+                      <span><%= msg.sender.name.charAt(0).toUpperCase() %></span>
+                    <% } %>
+                  </div>
+                <% } %>
+                <div class="chat-bubble-wrap">
+                  <% if (!isMe) { %>
+                    <span class="chat-name"><%= msg.sender.name %></span>
+                  <% } %>
+                  <div class="chat-bubble"><%= msg.message %></div>
+                  <span class="chat-time"><%= new Date(msg.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) %></span>
+                </div>
+              </div>
+            <% }) %>
+          <% } %>
+        </div>
+
+        <form class="chat-input-area" onsubmit="sendChatMessage(event)">
+          <input type="text" id="chatInput" placeholder="Type a message..." autocomplete="off" required />
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </form>
+      </div>
+
+      <script>
+        // Initialize chat polling
+        var lastTimestamp = '<%= messages.length > 0 ? messages[messages.length - 1].timestamp : new Date(0).toISOString() %>';
+        var currentUserId = '<%= user._id %>';
+        document.addEventListener('DOMContentLoaded', function() {
+          initChat(currentUserId);
+        });
+      </script>
+
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>

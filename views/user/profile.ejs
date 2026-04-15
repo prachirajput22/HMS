@@ -1,0 +1,115 @@
+<%- include('../partials/header') %>
+<div class="app-layout">
+  <%- include('../partials/sidebar') %>
+  <div class="main-content">
+    <%- include('../partials/topbar') %>
+    <div class="page-content">
+
+      <% if (success && success.length > 0) { %>
+        <% success.forEach(s => { %><div class="alert alert-success"><i class="fas fa-check-circle"></i> <%= s %></div><% }) %>
+      <% } %>
+      <% if (errors && errors.length > 0) { %>
+        <% errors.forEach(e => { %><div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <%= e %></div><% }) %>
+      <% } %>
+
+      <div class="glass-card">
+        <div class="profile-header">
+          <div class="profile-avatar">
+            <% if (user.profileImage) { %>
+              <img src="<%= user.profileImage %>" alt="<%= user.name %>" />
+            <% } else { %>
+              <div class="avatar-initial"><%= user.name.charAt(0).toUpperCase() %></div>
+            <% } %>
+          </div>
+          <div class="profile-info">
+            <h2><%= user.name %></h2>
+            <p><i class="fas fa-envelope"></i> <%= user.email %></p>
+            <p><i class="fas fa-graduation-cap"></i> <%= user.course || 'Not specified' %></p>
+            <div style="margin-top:8px;">
+              <span class="badge badge-<%= user.roomStatus === 'Allocated' ? 'success' : (user.roomStatus === 'Waiting' ? 'warning' : 'info') %>">
+                <span class="status-dot <%= user.roomStatus.toLowerCase() %>"></span> <%= user.roomStatus %>
+              </span>
+              <% if (user.roomId) { %>
+                <span class="badge badge-primary"><i class="fas fa-door-open"></i> Room <%= user.roomId.roomNumber %></span>
+              <% } %>
+            </div>
+          </div>
+        </div>
+
+        <form action="/profile" method="POST" enctype="multipart/form-data">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="name">Full Name</label>
+              <input type="text" id="name" name="name" class="form-control" value="<%= user.name %>" required />
+            </div>
+            <div class="form-group">
+              <label for="phone">Phone</label>
+              <input type="text" id="phone" name="phone" class="form-control" value="<%= user.phone || '' %>" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="age">Age</label>
+              <input type="number" id="age" name="age" class="form-control" value="<%= user.age || '' %>" min="16" max="30" />
+            </div>
+            <div class="form-group">
+              <label for="gender">Gender</label>
+              <select id="gender" name="gender" class="form-control">
+                <option value="Male" <%= user.gender === 'Male' ? 'selected' : '' %>>Male</option>
+                <option value="Female" <%= user.gender === 'Female' ? 'selected' : '' %>>Female</option>
+                <option value="Other" <%= user.gender === 'Other' ? 'selected' : '' %>>Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="course">Course</label>
+            <input type="text" id="course" name="course" class="form-control" value="<%= user.course || '' %>" />
+          </div>
+
+          <h3 style="font-size:0.95rem;margin:1.25rem 0 0.75rem;display:flex;align-items:center;gap:8px;">
+            <i class="fas fa-sliders-h" style="color:var(--primary)"></i> Roommate Preferences
+          </h3>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="sleepSchedule">Sleep Schedule</label>
+              <select id="sleepSchedule" name="sleepSchedule" class="form-control">
+                <option value="Early Bird" <%= user.preferences.sleepSchedule === 'Early Bird' ? 'selected' : '' %>>🌅 Early Bird</option>
+                <option value="Night Owl" <%= user.preferences.sleepSchedule === 'Night Owl' ? 'selected' : '' %>>🌙 Night Owl</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="food">Food Preference</label>
+              <select id="food" name="food" class="form-control">
+                <option value="Veg" <%= user.preferences.food === 'Veg' ? 'selected' : '' %>>🥬 Vegetarian</option>
+                       </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="lifestyle">Lifestyle</label>
+              <select id="lifestyle" name="lifestyle" class="form-control">
+                <option value="Quiet" <%= user.preferences.lifestyle === 'Quiet' ? 'selected' : '' %>>🤫 Quiet</option>
+                <option value="Social" <%= user.preferences.lifestyle === 'Social' ? 'selected' : '' %>>🎉 Social</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="profileImage">Profile Photo</label>
+              <input type="file" id="profileImage" name="profileImage" class="form-control" accept="image/*" onchange="previewImage(this)" />
+            </div>
+          </div>
+
+          <img id="imagePreview" class="image-preview hidden" alt="Preview" />
+
+          <button type="submit" class="btn btn-primary mt-2">
+            <i class="fas fa-save"></i> Save Changes
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>

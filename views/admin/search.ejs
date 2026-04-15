@@ -1,0 +1,62 @@
+<%- include('../partials/header') %>
+<div class="app-layout">
+  <%- include('../partials/adminSidebar') %>
+  <div class="main-content">
+    <%- include('../partials/topbar') %>
+    <div class="page-content">
+
+      <!-- Search Form -->
+      <div class="search-form">
+        <input type="text" id="searchInput" placeholder="Search by name, email, or room number..."
+               value="<%= query %>" onkeydown="if(event.key==='Enter'){window.location='/admin/search?q='+this.value}" />
+        <button class="btn btn-primary" onclick="window.location='/admin/search?q='+document.getElementById('searchInput').value">
+          <i class="fas fa-search"></i> Search
+        </button>
+      </div>
+
+      <% if (query) { %>
+        <p class="text-muted mb-2">Found <strong><%= results.length %></strong> result(s) for "<%= query %>"</p>
+      <% } %>
+
+      <% if (results.length > 0) { %>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr><th>Name</th><th>Email</th><th>Course</th><th>Gender</th><th>Room</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              <% results.forEach(u => { %>
+                <tr>
+                  <td><strong><%= u.name %></strong></td>
+                  <td><%= u.email %></td>
+                  <td><%= u.course || '—' %></td>
+                  <td><%= u.gender || '—' %></td>
+                  <td>
+                    <% if (u.roomId) { %>
+                      <span class="badge badge-primary">Room <%= u.roomId.roomNumber %> • Floor <%= u.roomId.floor %></span>
+                    <% } else { %>
+                      —
+                    <% } %>
+                  </td>
+                  <td>
+                    <span class="badge badge-<%= u.roomStatus === 'Allocated' ? 'success' : (u.roomStatus === 'Waiting' ? 'warning' : 'info') %>">
+                      <%= u.roomStatus %>
+                    </span>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } else if (query) { %>
+        <div class="empty-state">
+          <i class="fas fa-search"></i>
+          <h4>No Results Found</h4>
+          <p>Try a different search term.</p>
+        </div>
+      <% } %>
+
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>

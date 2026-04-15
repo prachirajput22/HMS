@@ -1,0 +1,70 @@
+<%- include('../partials/header') %>
+<div class="app-layout">
+  <%- include('../partials/adminSidebar') %>
+  <div class="main-content">
+    <%- include('../partials/topbar') %>
+    <div class="page-content">
+
+      <% if (success && success.length > 0) { %>
+        <% success.forEach(s => { %><div class="alert alert-success"><i class="fas fa-check-circle"></i> <%= s %></div><% }) %>
+      <% } %>
+      <% if (errors && errors.length > 0) { %>
+        <% errors.forEach(e => { %><div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <%= e %></div><% }) %>
+      <% } %>
+
+      <div class="section-header">
+        <h3><i class="fas fa-rupee-sign"></i> All Payments (<%= fees.length %>)</h3>
+      </div>
+
+      <% if (fees.length === 0) { %>
+        <div class="empty-state">
+          <i class="fas fa-receipt"></i>
+          <h4>No Payment Records</h4>
+          <p>Payment records will appear here once rooms are allocated.</p>
+        </div>
+      <% } else { %>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Room</th>
+                <th>Amount</th>
+                <th>Late Fee</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Due Date</th>
+                <th>Receipt</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% fees.forEach(fee => { %>
+                <tr>
+                  <td>
+                    <strong><%= fee.userId ? fee.userId.name : 'Deleted' %></strong>
+                    <br><small class="text-muted"><%= fee.userId ? fee.userId.email : '' %></small>
+                  </td>
+                  <td><%= fee.roomId ? fee.roomId.roomNumber : '—' %></td>
+                  <td>₹<%= fee.amount %></td>
+                  <td style="color:<%= fee.lateFee > 0 ? 'var(--danger)' : 'inherit' %>">
+                    <%= fee.lateFee > 0 ? '₹' + fee.lateFee : '—' %>
+                  </td>
+                  <td><strong>₹<%= fee.amount + fee.lateFee %></strong></td>
+                  <td>
+                    <span class="badge badge-<%= fee.status === 'Paid' ? 'success' : 'warning' %>">
+                      <%= fee.status %>
+                    </span>
+                  </td>
+                  <td><%= new Date(fee.dueDate).toLocaleDateString('en-IN') %></td>
+                  <td><span class="badge badge-info"><%= fee.receiptId %></span></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>

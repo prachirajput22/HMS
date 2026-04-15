@@ -1,0 +1,160 @@
+<%- include('../partials/header') %>
+<div class="app-layout">
+  <%- include('../partials/sidebar') %>
+  <div class="main-content">
+    <%- include('../partials/topbar') %>
+    <div class="page-content">
+
+      <% if (success && success.length > 0) { %>
+        <% success.forEach(s => { %><div class="alert alert-success"><i class="fas fa-check-circle"></i> <%= s %></div><% }) %>
+      <% } %>
+      <% if (errors && errors.length > 0) { %>
+        <% errors.forEach(e => { %><div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <%= e %></div><% }) %>
+      <% } %>
+
+      <!-- File New Complaint -->
+      <div class="glass-card mb-3">
+        <h3 style="margin-bottom:1rem;display:flex;align-items:center;gap:8px;">
+          <i class="fas fa-plus-circle" style="color:var(--primary)"></i> File New Complaint
+        </h3>
+        <form action="/complaint" method="POST" enctype="multipart/form-data">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="complaintCategory">Category</label>
+              <select id="complaintCategory" name="category" class="form-control" onchange="toggleRoomChange()" required>
+                <option value="Washroom Issue">🚿 Washroom Issue</option>
+                <option value="Water Issue">💧 Water Issue</option>
+                <option value="Electricity Issue">⚡ Electricity Issue</option>
+                <option value="Maintenance">🔧 Maintenance</option>
+                <option value="Roommate Complaint">👤 Roommate Complaint</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="complaintType">Visibility</label>
+              <select id="complaintType" name="type" class="form-control" onchange="toggleRoomChange()" required>
+                <option value="public">🌐 Public (visible to all)</option>
+                <option value="private">🔒 Private (admin only)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" class="form-control" placeholder="Describe the issue in detail..." required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="complaintImage">Attach Image (optional)</label>
+            <input type="file" id="complaintImage" name="image" class="form-control" accept="image/*" onchange="previewImage(this, 'complaintImgPreview')" />
+            <img id="complaintImgPreview" class="image-preview hidden" alt="Preview" />
+          </div>
+          <div id="roomChangeSection" class="hidden" style="margin-bottom:1rem;">
+            <label style="display:flex;align-items:center;gap:8px;font-size:0.88rem;cursor:pointer;">
+              <input type="checkbox" name="requestRoomChange" style="accent-color:var(--primary);" />
+              <span>Request room change</span>
+            </label>
+          </div>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-paper-plane"></i> Submit Complaint
+          </button>
+        </form>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="public" onclick="switchTab('public')">🌐 Public Complaints</button>
+        <button class="tab-btn" data-tab="private" onclick="switchTab('private')">🔒 My Private</button>
+      </div>
+
+      <!-- Public Complaints -->
+      <div id="tab-public" class="tab-content active">
+        <% if (publicComplaints.length === 0) { %>
+          <div class="empty-state">
+            <i class="fas fa-flag"></i>
+            <h4>No Public Complaints</h4>
+            <p>Be the first to file a complaint.</p>
+          </div>
+        <% } else { %>
+          <div class="complaint-grid">
+            <% publicComplaints.forEach(c => { %>
+              <% const priority = c.voteCount >= 6 ? 'High' : (c.voteCount >= 3 ? 'Medium' : 'Low'); %>
+              <div class="complaint-card">
+                <div class="complaint-header">
+                  <div class="complaint-author">
+                    <div class="author-avatar">
+                      <% if (c.userId && c.userId.profileImage) { %>
+                        <img src="<%= c.userId.profileImage %>" alt="" />
+                      <% } else { %>
+                        <%= c.userId ? c.userId.name.charAt(0).toUpperCase() : '?' %>
+                      <% } %>
+                    </div>
+                    <div>
+                      <div class="author-name"><%= c.userId ? c.userId.name : 'Unknown' %></div>
+                      <div class="complaint-category"><%= c.category %></div>
+                    </div>
+                  </div>
+                  <span class="badge priority-<%= priority.toLowerCase() %>"><%= priority %></span>
+                </div>
+                <div class="complaint-body"><%= c.description %></div>
+                <% if (c.image) { %>
+                  <img src="<%= c.image %>" alt="Complaint image" class="complaint-image" onclick="openLightbox('<%= c.image %>')" />
+                <% } %>
+                <div class="complaint-footer">
+                  <span class="badge badge-<%= c.status === 'Resolved' ? 'success' : (c.status === 'In Progress' ? 'warning' : 'info') %>">
+                    <%= c.status %>
+                  </span>
+                  <button class="vote-btn <%= c.votes.map(v=>v.toString()).includes(session.userId ? session.userId.toString() : '') ? 'voted' : '' %>"
+                          onclick="voteComplaint('<%= c._id %>', this)">
+                    <i class="fas fa-arrow-up"></i>
+                    <span class="vote-count"><%= c.voteCount %></span>
+                  </button>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Private Complaints -->
+      <div id="tab-private" class="tab-content">
+        <% if (privateComplaints.length === 0) { %>
+          <div class="empty-state">
+            <i class="fas fa-lock"></i>
+            <h4>No Private Complaints</h4>
+            <p>Your private complaints will appear here.</p>
+          </div>
+        <% } else { %>
+          <div class="complaint-grid">
+            <% privateComplaints.forEach(c => { %>
+              <div class="complaint-card private">
+                <div class="complaint-header">
+                  <div class="complaint-author">
+                    <i class="fas fa-lock lock-icon"></i>
+                    <div>
+                      <div class="author-name"><%= c.category %></div>
+                      <div class="complaint-category">Private • <%= c.roomNumber || '' %></div>
+                    </div>
+                  </div>
+                  <span class="badge badge-<%= c.status === 'Resolved' ? 'success' : (c.status === 'In Progress' ? 'warning' : 'info') %>">
+                    <%= c.status %>
+                  </span>
+                </div>
+                <div class="complaint-body"><%= c.description %></div>
+                <% if (c.isRoomChangeRequested) { %>
+                  <div class="badge badge-<%= c.roomChangeStatus === 'Approved' ? 'success' : (c.roomChangeStatus === 'Rejected' ? 'danger' : 'warning') %>" style="margin-top:8px;">
+                    Room Change: <%= c.roomChangeStatus %>
+                  </div>
+                <% } %>
+              </div>
+            <% }) %>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Lightbox -->
+      <div id="lightbox" class="lightbox hidden" onclick="closeLightbox()">
+        <img id="lightboxImg" alt="Full view" />
+      </div>
+
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>
