@@ -12,6 +12,8 @@ const complaintController = require('../controllers/complaintController');
 const attendanceController = require('../controllers/attendanceController');
 const notificationController = require('../controllers/notificationController');
 const feedbackController = require('../controllers/feedbackController');
+// Admin Root Redirect
+router.get('/', (req, res) => res.redirect('/admin/login'));
 
 // Admin Auth (no isAdmin guard — user is logging in)
 router.get('/login', isAdminGuest, authController.getAdminLogin);
