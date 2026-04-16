@@ -31,20 +31,32 @@ const complaintStorage = multer.diskStorage({
   },
 });
 
-// File filter: jpg/png only
-const fileFilter = (req, file, cb) => {
+// File filter for Profiles: jpg/png/webp
+const profileFileFilter = (req, file, cb) => {
   const allowed = /jpeg|jpg|png|webp/;
   const ext = path.extname(file.originalname).toLowerCase();
   if (allowed.test(ext)) {
     cb(null, true);
   } else {
-    cb(new Error('Only JPG, PNG, and WebP images are allowed.'), false);
+    cb(new Error('Only JPG, PNG, and WebP images are allowed for profiles.'), false);
   }
 };
 
-const limits = { fileSize: 5 * 1024 * 1024 }; // 5MB
+// File filter for Complaints: STRICTLY jpg/png
+const complaintFileFilter = (req, file, cb) => {
+  const allowed = /jpeg|jpg|png/;
+  const ext = path.extname(file.originalname).toLowerCase();
+  if (allowed.test(ext)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only JPG and PNG images are allowed for complaints.'), false);
+  }
+};
 
-const uploadProfile = multer({ storage: profileStorage, fileFilter, limits });
-const uploadComplaint = multer({ storage: complaintStorage, fileFilter, limits });
+const profileLimits = { fileSize: 5 * 1024 * 1024 }; // 5MB
+const complaintLimits = { fileSize: 2 * 1024 * 1024 }; // 2MB
+
+const uploadProfile = multer({ storage: profileStorage, fileFilter: profileFileFilter, limits: profileLimits });
+const uploadComplaint = multer({ storage: complaintStorage, fileFilter: complaintFileFilter, limits: complaintLimits });
 
 module.exports = { uploadProfile, uploadComplaint };

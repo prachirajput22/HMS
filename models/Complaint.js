@@ -16,8 +16,8 @@ const complaintSchema = new mongoose.Schema({
   roomNumber: { type: String },
   description: { type: String, required: true },
   image: { type: String, default: '' },
-  // 'Open' | 'In Progress' | 'Resolved'
-  status: { type: String, default: 'Open' },
+  // 'Pending' | 'In Progress' | 'Resolved'
+  status: { type: String, default: 'Pending' },
 
   // Voting (public only)
   votes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],

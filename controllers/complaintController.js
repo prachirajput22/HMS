@@ -40,10 +40,16 @@ exports.postComplaint = async (req, res) => {
     const { category, type, description } = req.body;
     const user = await User.findById(req.session.userId).populate('roomId');
 
+    let finalType = type;
+    // Auto-force private for roommate complaints
+    if (category === 'Roommate Complaint') {
+      finalType = 'private';
+    }
+
     const complaintData = {
       userId: req.session.userId,
       category,
-      type,
+      type: finalType,
       description,
     };
 
@@ -51,17 +57,17 @@ exports.postComplaint = async (req, res) => {
       complaintData.image = '/uploads/complaints/' + req.file.filename;
     }
 
-    // Auto-fill room info for private complaints
-    if (type === 'private' && user.roomId) {
+    // Auto-fill room info globally if the user belongs to a room
+    if (user.roomId) {
       complaintData.roomNumber = user.roomId.roomNumber;
       complaintData.floor = user.roomId.floor;
+    }
 
+    if (finalType === 'private' && category === 'Roommate Complaint') {
       // Only roommate complaints can request room change
-      if (category === 'Roommate Complaint') {
-        complaintData.isRoomChangeRequested = req.body.requestRoomChange === 'on';
-        if (complaintData.isRoomChangeRequested) {
-          complaintData.roomChangeStatus = 'Pending';
-        }
+      complaintData.isRoomChangeRequested = req.body.requestRoomChange === 'on';
+      if (complaintData.isRoomChangeRequested) {
+        complaintData.roomChangeStatus = 'Pending';
       }
     }
 
@@ -172,9 +178,13 @@ exports.handleRoomChange = async (req, res) => {
       await require('../models/Notification').create({
         userId: user._id,
         title: 'Room Change Approved',
-        message: 'Your room change request has been approved. Please request a new room.',
+        message: 'Your room change request has been approved. The Smart Allocation system will assign a new room shortly.',
         type: 'system',
       });
+
+      // Re-run the room allocation engine automatically
+      const adminController = require('./adminController');
+      await adminController.executeSmartAllocation();
     } else {
       complaint.roomChangeStatus = 'Rejected';
       await require('../models/Notification').create({

@@ -11,6 +11,23 @@
       <% if (errors && errors.length > 0) { %>
         <% errors.forEach(e => { %><div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <%= e %></div><% }) %>
       <% } %>
+      
+      <% 
+        function timeAgo(date) {
+          const seconds = Math.floor((new Date() - date) / 1000);
+          let interval = seconds / 31536000;
+          if (interval > 1) return Math.floor(interval) + " years ago";
+          interval = seconds / 2592000;
+          if (interval > 1) return Math.floor(interval) + " months ago";
+          interval = seconds / 86400;
+          if (interval > 1) return Math.floor(interval) + " days ago";
+          interval = seconds / 3600;
+          if (interval > 1) return Math.floor(interval) + " hours ago";
+          interval = seconds / 60;
+          if (interval > 1) return Math.floor(interval) + " minutes ago";
+          return Math.floor(seconds) + " seconds ago";
+        }
+      %>
 
       <!-- File New Complaint -->
       <div class="glass-card mb-3">
@@ -58,51 +75,64 @@
         </form>
       </div>
 
-      <!-- Tabs -->
-      <div class="tabs">
-        <button class="tab-btn active" data-tab="public" onclick="switchTab('public')">🌐 Public Complaints</button>
-        <button class="tab-btn" data-tab="private" onclick="switchTab('private')">🔒 My Private</button>
+      <!-- Tabs & Search/Filter Controls -->
+      <div class="filter-controls glass-card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:1rem; padding:10px 15px;">
+        <div class="tabs" style="margin:0; border:none; padding:0; background:transparent;">
+          <button class="tab-btn active" data-tab="public" onclick="switchThemeTab('public')" id="tab-public" style="background:var(--primary); color:#fff; border-radius:6px; padding:6px 12px; border:none; cursor:pointer;">🌐 Public Complaints</button>
+          <button class="tab-btn" data-tab="private" onclick="switchThemeTab('private')" id="tab-private" style="background:rgba(255,255,255,0.1); color:var(--text-primary); border-radius:6px; padding:6px 12px; border:none; cursor:pointer;">🔒 My Complaints</button>
+        </div>
+        <div class="search-filter" style="display:flex; gap:10px; flex:1; max-width:400px;">
+          <select id="catFilter" class="form-control" style="flex:1;" onchange="filterComplaints()">
+            <option value="all">All Categories</option>
+            <option value="Washroom Issue">Washroom Issue</option>
+            <option value="Water Issue">Water Issue</option>
+            <option value="Electricity Issue">Electricity Issue</option>
+            <option value="Maintenance">Maintenance</option>
+            <option value="Roommate Complaint">Roommate Complaint</option>
+          </select>
+          <input type="text" id="searchInput" class="form-control" placeholder="Search issues..." onkeyup="filterComplaints()" style="flex:2;" />
+        </div>
       </div>
 
       <!-- Public Complaints -->
-      <div id="tab-public" class="tab-content active">
+      <div id="view-public" class="tab-content active" style="display:block;">
         <% if (publicComplaints.length === 0) { %>
-          <div class="empty-state">
-            <i class="fas fa-flag"></i>
+          <div class="empty-state glass-card">
+            <i class="fas fa-flag" style="font-size:3rem; color:var(--text-muted); margin-bottom:1rem;"></i>
             <h4>No Public Complaints</h4>
             <p>Be the first to file a complaint.</p>
           </div>
         <% } else { %>
-          <div class="complaint-grid">
+          <div class="complaint-grid" id="publicGrid">
             <% publicComplaints.forEach(c => { %>
               <% const priority = c.voteCount >= 6 ? 'High' : (c.voteCount >= 3 ? 'Medium' : 'Low'); %>
-              <div class="complaint-card">
+              <div class="complaint-card glass-card complaint-item" data-category="<%= c.category %>" data-text="<%= c.description.toLowerCase() %>">
                 <div class="complaint-header">
                   <div class="complaint-author">
-                    <div class="author-avatar">
+                    <div class="author-avatar" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:var(--primary);color:#fff;border-radius:50%;font-weight:bold;">
                       <% if (c.userId && c.userId.profileImage) { %>
-                        <img src="<%= c.userId.profileImage %>" alt="" />
+                        <img src="<%= c.userId.profileImage %>" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />
                       <% } else { %>
                         <%= c.userId ? c.userId.name.charAt(0).toUpperCase() : '?' %>
                       <% } %>
                     </div>
                     <div>
-                      <div class="author-name"><%= c.userId ? c.userId.name : 'Unknown' %></div>
-                      <div class="complaint-category"><%= c.category %></div>
+                      <div class="author-name" style="font-weight:600;"><%= c.userId ? c.userId.name : 'Unknown' %></div>
+                      <div class="complaint-category" style="font-size:0.8rem; color:var(--text-muted);"><%= c.category %> • <%= timeAgo(c.createdAt) %></div>
                     </div>
                   </div>
                   <span class="badge priority-<%= priority.toLowerCase() %>"><%= priority %></span>
                 </div>
-                <div class="complaint-body"><%= c.description %></div>
+                <div class="complaint-body" style="margin-top:1rem; margin-bottom:1rem;"><%= c.description %></div>
                 <% if (c.image) { %>
-                  <img src="<%= c.image %>" alt="Complaint image" class="complaint-image" onclick="openLightbox('<%= c.image %>')" />
+                  <img src="<%= c.image %>" alt="Complaint image" class="complaint-image" onclick="openLightbox('<%= c.image %>')" style="width:100%; max-height:200px; object-fit:cover; border-radius:8px; cursor:pointer;" />
                 <% } %>
-                <div class="complaint-footer">
+                <div class="complaint-footer" style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.1);">
                   <span class="badge badge-<%= c.status === 'Resolved' ? 'success' : (c.status === 'In Progress' ? 'warning' : 'info') %>">
                     <%= c.status %>
                   </span>
-                  <button class="vote-btn <%= c.votes.map(v=>v.toString()).includes(session.userId ? session.userId.toString() : '') ? 'voted' : '' %>"
-                          onclick="voteComplaint('<%= c._id %>', this)">
+                  <button class="btn btn-secondary vote-btn <%= c.votes.map(v=>v.toString()).includes(session.userId ? session.userId.toString() : '') ? 'voted' : '' %>"
+                          onclick="voteComplaint('<%= c._id %>', this)" style="<%= c.votes.map(v=>v.toString()).includes(session.userId ? session.userId.toString() : '') ? 'background:var(--primary);color:#fff;' : '' %>">
                     <i class="fas fa-arrow-up"></i>
                     <span class="vote-count"><%= c.voteCount %></span>
                   </button>
@@ -114,32 +144,35 @@
       </div>
 
       <!-- Private Complaints -->
-      <div id="tab-private" class="tab-content">
+      <div id="view-private" class="tab-content" style="display:none;">
         <% if (privateComplaints.length === 0) { %>
-          <div class="empty-state">
-            <i class="fas fa-lock"></i>
+          <div class="empty-state glass-card">
+            <i class="fas fa-lock" style="font-size:3rem; color:var(--text-muted); margin-bottom:1rem;"></i>
             <h4>No Private Complaints</h4>
             <p>Your private complaints will appear here.</p>
           </div>
         <% } else { %>
-          <div class="complaint-grid">
+          <div class="complaint-grid" id="privateGrid">
             <% privateComplaints.forEach(c => { %>
-              <div class="complaint-card private">
+              <div class="complaint-card private glass-card complaint-item" data-category="<%= c.category %>" data-text="<%= c.description.toLowerCase() %>">
                 <div class="complaint-header">
                   <div class="complaint-author">
-                    <i class="fas fa-lock lock-icon"></i>
+                    <i class="fas fa-lock lock-icon" style="color:var(--text-muted); font-size:1.5rem; margin-right:10px;"></i>
                     <div>
-                      <div class="author-name"><%= c.category %></div>
-                      <div class="complaint-category">Private • <%= c.roomNumber || '' %></div>
+                      <div class="author-name" style="font-weight:600;"><%= c.category %></div>
+                      <div class="complaint-category" style="font-size:0.8rem; color:var(--text-muted);">Private • <%= c.roomNumber || '' %> • <%= timeAgo(c.createdAt) %></div>
                     </div>
                   </div>
                   <span class="badge badge-<%= c.status === 'Resolved' ? 'success' : (c.status === 'In Progress' ? 'warning' : 'info') %>">
                     <%= c.status %>
                   </span>
                 </div>
-                <div class="complaint-body"><%= c.description %></div>
+                <div class="complaint-body" style="margin-top:1rem;"><%= c.description %></div>
+                <% if (c.image) { %>
+                  <img src="<%= c.image %>" alt="Complaint image" class="complaint-image" onclick="openLightbox('<%= c.image %>')" style="width:100%; max-height:200px; object-fit:cover; border-radius:8px; cursor:pointer; margin-top:1rem;" />
+                <% } %>
                 <% if (c.isRoomChangeRequested) { %>
-                  <div class="badge badge-<%= c.roomChangeStatus === 'Approved' ? 'success' : (c.roomChangeStatus === 'Rejected' ? 'danger' : 'warning') %>" style="margin-top:8px;">
+                  <div class="badge badge-<%= c.roomChangeStatus === 'Approved' ? 'success' : (c.roomChangeStatus === 'Rejected' ? 'danger' : 'warning') %>" style="margin-top:1rem; display:inline-block;">
                     Room Change: <%= c.roomChangeStatus %>
                   </div>
                 <% } %>
@@ -148,6 +181,34 @@
           </div>
         <% } %>
       </div>
+
+      <script>
+        function switchThemeTab(tab) {
+          document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+          document.querySelectorAll('.tab-btn').forEach(el => {
+            el.style.background = 'rgba(255,255,255,0.1)';
+            el.style.color = 'var(--text-primary)';
+          });
+          document.getElementById('view-' + tab).style.display = 'block';
+          document.getElementById('tab-' + tab).style.background = 'var(--primary)';
+          document.getElementById('tab-' + tab).style.color = '#fff';
+        }
+
+        function filterComplaints() {
+          const category = document.getElementById('catFilter').value;
+          const search = document.getElementById('searchInput').value.toLowerCase();
+          
+          document.querySelectorAll('.complaint-item').forEach(item => {
+            const itemCat = item.getAttribute('data-category');
+            const itemText = item.getAttribute('data-text');
+            
+            const matchesCat = (category === 'all' || itemCat === category);
+            const matchesSearch = (search === '' || itemText.includes(search));
+            
+            item.style.display = (matchesCat && matchesSearch) ? 'block' : 'none';
+          });
+        }
+      </script>
 
       <!-- Lightbox -->
       <div id="lightbox" class="lightbox hidden" onclick="closeLightbox()">

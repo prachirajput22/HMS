@@ -41,7 +41,7 @@
                     <td>
                       <form action="/admin/complaints/<%= c._id %>/status" method="POST" style="display:flex;gap:4px;">
                         <select name="status" class="form-control" style="width:auto;padding:4px 8px;font-size:0.78rem;">
-                          <option value="Open" <%= c.status === 'Open' ? 'selected' : '' %>>Open</option>
+                          <option value="Pending" <%= c.status === 'Pending' ? 'selected' : '' %>>Pending</option>
                           <option value="In Progress" <%= c.status === 'In Progress' ? 'selected' : '' %>>In Progress</option>
                           <option value="Resolved" <%= c.status === 'Resolved' ? 'selected' : '' %>>Resolved</option>
                         </select>
@@ -98,7 +98,7 @@
                     <td>
                       <form action="/admin/complaints/<%= c._id %>/status" method="POST" style="display:flex;gap:4px;">
                         <select name="status" class="form-control" style="width:auto;padding:4px 8px;font-size:0.78rem;">
-                          <option value="Open" <%= c.status === 'Open' ? 'selected' : '' %>>Open</option>
+                          <option value="Pending" <%= c.status === 'Pending' ? 'selected' : '' %>>Pending</option>
                           <option value="In Progress" <%= c.status === 'In Progress' ? 'selected' : '' %>>In Progress</option>
                           <option value="Resolved" <%= c.status === 'Resolved' ? 'selected' : '' %>>Resolved</option>
                         </select>
