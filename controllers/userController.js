@@ -26,7 +26,7 @@ exports.getDashboard = async (req, res) => {
     // Payment reminder check (3 days before due date, once)
     if (fee && fee.dueDate) {
       const daysLeft = Math.ceil((new Date(fee.dueDate) - new Date()) / (1000 * 60 * 60 * 24));
-      if (daysLeft <= 3 && daysLeft > 0) {
+      if (daysLeft <= 1 && daysLeft > 0) {
         const alreadySent = await Notification.findOne({
           userId: user._id, type: 'payment_reminder'
         });

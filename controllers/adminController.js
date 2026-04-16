@@ -538,11 +538,21 @@ exports.getPayments = async (req, res) => {
       .populate('roomId', 'roomNumber')
       .sort({ createdAt: -1 });
 
-    // Auto-apply late fees
+    let totalAmount = 0;
+    let paidCount = 0;
+    let pendingCount = 0;
+
     for (const fee of fees) {
       if (fee.status === 'Pending' && fee.dueDate < new Date() && fee.lateFee === 0) {
         fee.lateFee = Math.round(fee.amount * 0.1);
         await fee.save();
+      }
+
+      if (fee.status === 'Paid') {
+        paidCount++;
+        totalAmount += fee.amount + fee.lateFee;
+      } else {
+        pendingCount++;
       }
     }
 
@@ -550,6 +560,9 @@ exports.getPayments = async (req, res) => {
       title: 'Payment Management',
       admin,
       fees,
+      totalAmount,
+      paidCount,
+      pendingCount,
       errors: req.flash('error'),
       success: req.flash('success'),
     });

@@ -12,69 +12,117 @@
         <% errors.forEach(e => { %><div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <%= e %></div><% }) %>
       <% } %>
 
-      <% if (fees.length === 0) { %>
-        <div class="empty-state">
-          <i class="fas fa-receipt"></i>
-          <h4>No Fee Records</h4>
-          <p>You don't have any fee records yet. Request a room to get started.</p>
-        </div>
-      <% } else { %>
-        <div class="payment-grid">
-          <% fees.forEach(fee => { %>
-            <div class="payment-card">
-              <div class="payment-header">
-                <div class="payment-amount">₹<%= fee.amount + fee.lateFee %></div>
-                <span class="badge badge-<%= fee.status === 'Paid' ? 'success' : 'warning' %>">
-                  <i class="fas fa-<%= fee.status === 'Paid' ? 'check-circle' : 'clock' %>"></i>
-                  <%= fee.status %>
-                </span>
-              </div>
-              <div class="payment-details">
-                <div class="payment-detail">
-                  <span>Base Amount</span>
-                  <span>₹<%= fee.amount %></span>
+      <% 
+        const pendingFees = fees.filter(f => f.status === 'Pending');
+        const paidFees = fees.filter(f => f.status === 'Paid');
+      %>
+
+      <div class="tabs-container mb-3" style="border-bottom: 2px solid rgba(255,255,255,0.1); display:flex; gap:20px;">
+        <button class="notif-tab tab-btn active" onclick="switchThemeTab('pending')" id="tab-pending" style="background:none; border:none; color:var(--text-primary); font-size:1.05rem; font-weight:600; padding:8px 4px; cursor:pointer; border-bottom: 3px solid var(--primary);">Pending Dues</button>
+        <button class="notif-tab tab-btn" onclick="switchThemeTab('history')" id="tab-history" style="background:none; border:none; color:var(--text-muted); font-size:1.05rem; font-weight:600; padding:8px 4px; cursor:pointer; border-bottom: 3px solid transparent;">Payment History</button>
+      </div>
+
+      <div id="view-pending" class="tab-view">
+        <% if (pendingFees.length === 0) { %>
+          <div class="empty-state glass-card">
+            <i class="fas fa-check-circle" style="color:var(--success); font-size:3rem; margin-bottom:1rem;"></i>
+            <h4>No Pending Dues</h4>
+            <p>You have successfully cleared all your hostel fee dues!</p>
+          </div>
+        <% } else { %>
+          <div class="payment-grid">
+            <% pendingFees.forEach(fee => { %>
+              <div class="payment-card glass-card">
+                <div class="payment-header">
+                  <div class="payment-amount">₹<%= fee.amount + fee.lateFee %></div>
+                  <span class="badge badge-warning">
+                    <i class="fas fa-clock"></i> Pending
+                  </span>
                 </div>
-                <% if (fee.lateFee > 0) { %>
-                  <div class="payment-detail" style="color:var(--danger);">
-                    <span>Late Fee</span>
-                    <span>₹<%= fee.lateFee %></span>
-                  </div>
-                <% } %>
-                <div class="payment-detail">
-                  <span>Receipt ID</span>
-                  <span><%= fee.receiptId %></span>
-                </div>
-                <div class="payment-detail">
-                  <span>Due Date</span>
-                  <span><%= new Date(fee.dueDate).toLocaleDateString('en-IN') %></span>
-                </div>
-                <% if (fee.paidAt) { %>
+                <div class="payment-details">
                   <div class="payment-detail">
-                    <span>Paid On</span>
-                    <span><%= new Date(fee.paidAt).toLocaleDateString('en-IN') %></span>
+                    <span>Base Amount</span><span>₹<%= fee.amount %></span>
+                  </div>
+                  <% if (fee.lateFee > 0) { %>
+                    <div class="payment-detail" style="color:var(--danger);">
+                      <span>Late Fee</span><span>₹<%= fee.lateFee %></span>
+                    </div>
+                  <% } %>
+                  <div class="payment-detail">
+                    <span>Receipt ID</span><span><%= fee.receiptId %></span>
+                  </div>
+                  <div class="payment-detail">
+                    <span>Due Date</span><span style="<%= fee.dueDate < new Date() ? 'color:var(--danger);font-weight:bold;' : '' %>"><%= new Date(fee.dueDate).toLocaleDateString('en-IN') %></span>
+                  </div>
+                </div>
+
+                <% if (fee.lateFee > 0) { %>
+                  <div class="late-fee-warning" style="background:rgba(255, 71, 87, 0.1); color:var(--danger); padding:10px; border-radius:8px; margin-top:1rem; font-size:0.9rem;">
+                    <i class="fas fa-exclamation-triangle"></i> Late fee of ₹<%= fee.lateFee %> has been applied!
                   </div>
                 <% } %>
-              </div>
 
-              <% if (fee.lateFee > 0 && fee.status === 'Pending') { %>
-                <div class="late-fee-warning">
-                  <i class="fas fa-exclamation-triangle"></i>
-                  Late fee of ₹<%= fee.lateFee %> has been applied!
-                </div>
-              <% } %>
-
-              <% if (fee.status === 'Pending') { %>
-                <form action="/payment" method="POST" style="margin-top:1rem;">
+                <form action="/payment" method="POST" style="margin-top:1.5rem;">
                   <input type="hidden" name="feeId" value="<%= fee._id %>" />
-                  <button type="submit" class="btn btn-primary btn-block">
+                  <button type="submit" class="btn btn-primary" style="width:100%;">
                     <i class="fas fa-credit-card"></i> Pay ₹<%= fee.amount + fee.lateFee %>
                   </button>
                 </form>
-              <% } %>
-            </div>
-          <% }) %>
-        </div>
-      <% } %>
+              </div>
+            <% }) %>
+          </div>
+        <% } %>
+      </div>
+
+      <div id="view-history" class="tab-view" style="display:none;">
+        <% if (paidFees.length === 0) { %>
+          <div class="empty-state glass-card">
+            <i class="fas fa-receipt" style="color:var(--text-muted); font-size:2.5rem; margin-bottom:1rem;"></i>
+            <h4>No Payment History</h4>
+            <p>Your future payment receipts will appear securely right here.</p>
+          </div>
+        <% } else { %>
+          <div class="payment-grid">
+            <% paidFees.forEach(fee => { %>
+              <div class="payment-card glass-card" style="border-left:4px solid var(--success);">
+                <div class="payment-header">
+                  <div class="payment-amount">₹<%= fee.amount + fee.lateFee %></div>
+                  <span class="badge badge-success">
+                    <i class="fas fa-check-circle"></i> Paid
+                  </span>
+                </div>
+                <div class="payment-details">
+                  <div class="payment-detail">
+                    <span>Total Amount</span><span>₹<%= fee.amount + fee.lateFee %></span>
+                  </div>
+                  <div class="payment-detail">
+                    <span>Receipt ID</span><span style="font-weight:600; color:var(--text-primary);"><%= fee.receiptId %></span>
+                  </div>
+                  <div class="payment-detail">
+                    <span>Paid On</span><span><%= new Date(fee.paidAt).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}) %></span>
+                  </div>
+                </div>
+                <a href="#" class="btn btn-secondary" style="width:100%; margin-top:1rem; padding:8px;" onclick="window.print(); return false;">
+                  <i class="fas fa-download"></i> View Receipt
+                </a>
+              </div>
+            <% }) %>
+          </div>
+        <% } %>
+      </div>
+
+      <script>
+        function switchThemeTab(tab) {
+          document.querySelectorAll('.tab-view').forEach(el => el.style.display = 'none');
+          document.querySelectorAll('.tab-btn').forEach(el => {
+            el.style.color = 'var(--text-muted)';
+            el.style.borderBottomColor = 'transparent';
+          });
+          document.getElementById('view-' + tab).style.display = 'block';
+          document.getElementById('tab-' + tab).style.color = 'var(--text-primary)';
+          document.getElementById('tab-' + tab).style.borderBottomColor = 'var(--primary)';
+        }
+      </script>
 
     </div>
   </div>

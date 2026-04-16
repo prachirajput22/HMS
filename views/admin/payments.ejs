@@ -17,51 +17,129 @@
       </div>
 
       <% if (fees.length === 0) { %>
-        <div class="empty-state">
-          <i class="fas fa-receipt"></i>
+        <div class="empty-state glass-card">
+          <i class="fas fa-receipt" style="font-size:3rem; color:var(--text-muted); margin-bottom:1rem;"></i>
           <h4>No Payment Records</h4>
-          <p>Payment records will appear here once rooms are allocated.</p>
+          <p>Payment records will dynamically appear here when users are successfully allocated rooms.</p>
         </div>
       <% } else { %>
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>Student</th>
-                <th>Room</th>
-                <th>Amount</th>
-                <th>Late Fee</th>
-                <th>Total</th>
-                <th>Status</th>
-                <th>Due Date</th>
-                <th>Receipt</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% fees.forEach(fee => { %>
-                <tr>
-                  <td>
-                    <strong><%= fee.userId ? fee.userId.name : 'Deleted' %></strong>
-                    <br><small class="text-muted"><%= fee.userId ? fee.userId.email : '' %></small>
-                  </td>
-                  <td><%= fee.roomId ? fee.roomId.roomNumber : '—' %></td>
-                  <td>₹<%= fee.amount %></td>
-                  <td style="color:<%= fee.lateFee > 0 ? 'var(--danger)' : 'inherit' %>">
-                    <%= fee.lateFee > 0 ? '₹' + fee.lateFee : '—' %>
-                  </td>
-                  <td><strong>₹<%= fee.amount + fee.lateFee %></strong></td>
-                  <td>
-                    <span class="badge badge-<%= fee.status === 'Paid' ? 'success' : 'warning' %>">
-                      <%= fee.status %>
-                    </span>
-                  </td>
-                  <td><%= new Date(fee.dueDate).toLocaleDateString('en-IN') %></td>
-                  <td><span class="badge badge-info"><%= fee.receiptId %></span></td>
-                </tr>
-              <% }) %>
-            </tbody>
-          </table>
+        <!-- Analytics & Chart Module -->
+        <div class="dashboard-grid mb-4" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+          
+          <div class="stat-card glass-card">
+            <div class="stat-icon" style="background:var(--success)"><i class="fas fa-rupee-sign"></i></div>
+            <div class="stat-info">
+              <h3>₹<%= totalAmount %></h3>
+              <p>Total Revenue (Paid)</p>
+            </div>
+          </div>
+          
+          <div class="stat-card glass-card">
+            <div class="stat-icon" style="background:var(--primary)"><i class="fas fa-chart-pie"></i></div>
+            <div class="stat-info" style="flex:1;">
+              <p style="margin:0 0 5px;font-weight:600;">Payment Distribution</p>
+              <div style="height:100px; position:relative; width:100%;">
+                <canvas id="paymentChart"></canvas>
+              </div>
+            </div>
+          </div>
+
         </div>
+
+        <div class="glass-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:10px;">
+            <h3 style="margin:0;"><i class="fas fa-file-invoice-dollar"></i> Global Payment Records</h3>
+            <div class="filter-controls" style="display:flex; gap:8px;">
+              <button class="btn btn-primary" onclick="filterPayments('all')">All</button>
+              <button class="btn btn-success" onclick="filterPayments('Paid')">Paid</button>
+              <button class="btn btn-secondary" onclick="filterPayments('Pending')">Pending</button>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table id="paymentsTable">
+              <thead>
+                <tr>
+                  <th>Student Info</th>
+                  <th>Room Data</th>
+                  <th>Core Fee</th>
+                  <th>Late Penalty</th>
+                  <th>Final Total</th>
+                  <th>Current Status</th>
+                  <th>Due Date</th>
+                  <th>Recpt. ID</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% fees.forEach(fee => { 
+                  let isLateDefaulter = fee.lateFee > 0 && fee.status === 'Pending';
+                %>
+                  <tr class="payment-row <%= fee.status %>" style="<%= isLateDefaulter ? 'background-color:rgba(255, 71, 87, 0.08);' : '' %>">
+                    <td>
+                      <strong style="<%= isLateDefaulter ? 'color:var(--danger)' : '' %>"><%= fee.userId ? fee.userId.name : 'Deleted' %></strong>
+                      <br><small class="text-muted"><%= fee.userId ? fee.userId.email : '' %></small>
+                      <% if (isLateDefaulter) { %>
+                        <br><span style="font-size:0.7rem; color: #fff; background: var(--danger); padding:1px 4px; border-radius:4px;">Defaulter</span>
+                      <% } %>
+                    </td>
+                    <td><span class="badge" style="background:rgba(255,255,255,0.05);color:var(--text-primary);"><%= fee.roomId ? fee.roomId.roomNumber : '—' %></span></td>
+                    <td>₹<%= fee.amount %></td>
+                    <td style="color:<%= fee.lateFee > 0 ? 'var(--danger)' : 'inherit' %>; font-weight: <%= fee.lateFee > 0 ? '600' : 'normal' %>;">
+                      <%= fee.lateFee > 0 ? '₹' + fee.lateFee : '—' %>
+                    </td>
+                    <td style="font-weight:700;">₹<%= fee.amount + fee.lateFee %></td>
+                    <td>
+                      <span class="badge badge-<%= fee.status === 'Paid' ? 'success' : 'warning' %>">
+                        <%= fee.status %>
+                      </span>
+                    </td>
+                    <td style="<%= isLateDefaulter ? 'color:var(--danger); font-weight:bold;' : '' %>"><%= new Date(fee.dueDate).toLocaleDateString('en-IN') %></td>
+                    <td><span class="badge badge-info" style="font-family:monospace;"><%= fee.receiptId || '—' %></span></td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <script>
+          // Tabular filtering logic
+          function filterPayments(status) {
+            const rows = document.querySelectorAll('.payment-row');
+            rows.forEach(row => {
+              if (status === 'all') {
+                row.style.display = '';
+              } else {
+                row.style.display = row.classList.contains(status) ? '' : 'none';
+              }
+            });
+          }
+
+          // Chart Rendering (Requires Chart.js loaded in footer, which already exists)
+          document.addEventListener('DOMContentLoaded', () => {
+             const ctx = document.getElementById('paymentChart');
+             if (ctx) {
+               new Chart(ctx, {
+                 type: 'pie',
+                 data: {
+                   labels: ['Paid', 'Pending'],
+                   datasets: [{
+                     data: [<%= paidCount %>, <%= pendingCount %>],
+                     backgroundColor: ['#2ed573', '#ffa502'],
+                     borderWidth: 0
+                   }]
+                 },
+                 options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   plugins: {
+                     legend: { position: 'right', labels: { color: '#a4b0be', boxWidth: 12 } }
+                   }
+                 }
+               });
+             }
+          });
+        </script>
       <% } %>
 
     </div>
