@@ -121,22 +121,6 @@ npm run seed
 npm run dev
 ```
 
-### Default Credentials
-
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@mits.com | admin123 |
-
-### Environment Variables
-
-```env
-PORT=3000
-MONGO_URI=mongodb://localhost:27017/mits_hostel_management
-SESSION_SECRET=your_secret_key
-NODE_ENV=development
-```
-
----
 
 ## 🎯 Routes
 
