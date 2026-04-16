@@ -18,6 +18,8 @@ const roomChangeController = require('../controllers/roomChangeController');
 router.get('/', (req, res) => res.redirect('/admin/login'));
 
 // Admin Auth (no isAdmin guard — user is logging in)
+router.get('/register', isAdminGuest, authController.getAdminRegister);
+router.post('/register', isAdminGuest, authController.postAdminRegister);
 router.get('/login', isAdminGuest, authController.getAdminLogin);
 router.post('/login', isAdminGuest, authController.postAdminLogin);
 router.get('/logout', authController.adminLogout);

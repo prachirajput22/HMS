@@ -104,6 +104,49 @@ exports.logout = (req, res) => {
 
 // ===================== ADMIN AUTH =====================
 
+// GET /admin/register
+exports.getAdminRegister = (req, res) => {
+  res.render('admin/register', {
+    title: 'Admin Register',
+    errors: req.flash('error'),
+    success: req.flash('success'),
+  });
+};
+
+// POST /admin/register
+exports.postAdminRegister = async (req, res) => {
+  try {
+    const { name, email, phone, password, confirmPassword } = req.body;
+
+    if (password !== confirmPassword) {
+      req.flash('error', 'Passwords do not match.');
+      return res.redirect('/admin/register');
+    }
+
+    const existingAdmin = await Admin.findOne({ email });
+    if (existingAdmin) {
+      req.flash('error', 'Admin email already exists.');
+      return res.redirect('/admin/register');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newAdmin = await Admin.create({
+      name,
+      email,
+      phone,
+      password: hashedPassword,
+    });
+
+    req.flash('success', 'Admin account registered securely! Please log in.');
+    res.redirect('/admin/login');
+  } catch (err) {
+    console.error(err);
+    req.flash('error', 'Registration failed.');
+    res.redirect('/admin/register');
+  }
+};
+
 // GET /admin/login
 exports.getAdminLogin = (req, res) => {
   res.render('admin/login', {

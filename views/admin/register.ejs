@@ -1,0 +1,55 @@
+<%- include('../partials/header') %>
+
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="auth-logo"><i class="fas fa-shield-alt"></i></div>
+      <h2>Admin Registration</h2>
+      <p class="auth-subtitle">MITS Hostel Management — Admin Portal</p>
+    </div>
+
+    <% if (errors && errors.length > 0) { %>
+      <% errors.forEach(e => { %>
+        <div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <%= e %></div>
+      <% }) %>
+    <% } %>
+    <% if (success && success.length > 0) { %>
+      <% success.forEach(s => { %>
+        <div class="alert alert-success"><i class="fas fa-check-circle"></i> <%= s %></div>
+      <% }) %>
+    <% } %>
+
+    <form action="/admin/register" method="POST">
+      <div class="form-group">
+        <label for="name"><i class="fas fa-user"></i> Full Name</label>
+        <input type="text" id="name" name="name" class="form-control" placeholder="John Doe" required autofocus />
+      </div>
+      <div class="form-group">
+        <label for="email"><i class="fas fa-envelope"></i> Admin Email</label>
+        <input type="email" id="email" name="email" class="form-control" placeholder="admin@mits.com" required />
+      </div>
+      <div class="form-group">
+        <label for="phone"><i class="fas fa-phone"></i> Phone Number (Optional)</label>
+        <input type="text" id="phone" name="phone" class="form-control" placeholder="+91 9876543210" />
+      </div>
+      <div class="form-group">
+        <label for="password"><i class="fas fa-lock"></i> Password</label>
+        <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required />
+      </div>
+      <div class="form-group">
+        <label for="confirmPassword"><i class="fas fa-lock"></i> Confirm Password</label>
+        <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" placeholder="••••••••" required />
+      </div>
+      <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top:1.5rem;">
+        <i class="fas fa-user-plus"></i> Register
+      </button>
+    </form>
+
+    <div class="auth-footer" style="display:flex; justify-content:space-between; margin-top:20px;">
+      <a href="/admin/login">Already have an account? Login here</a>
+      <a href="/">Cancel</a>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
