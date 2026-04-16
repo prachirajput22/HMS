@@ -8,7 +8,7 @@ const Fee = require('../models/Fee');
 const Complaint = require('../models/Complaint');
 const Feedback = require('../models/Feedback');
 const Notification = require('../models/Notification');
-const { findBestRoom } = require('../utils/smartMatch');
+const { findBestRoom, getRoomSuggestions, calculateMatchScore } = require('../utils/smartMatch');
 
 // ===================== DASHBOARD =====================
 exports.getDashboard = async (req, res) => {
@@ -110,10 +110,19 @@ exports.getRooms = async (req, res) => {
   try {
     const admin = await Admin.findById(req.session.adminId);
     const rooms = await Room.find().populate('occupants', 'name email').sort({ roomNumber: 1 });
+
+    const stats = {
+      total: rooms.length,
+      available: rooms.filter((r) => r.status === 'Available' && r.occupants.length < r.capacity).length,
+      full: rooms.filter((r) => r.status === 'Full').length,
+      maintenance: rooms.filter((r) => r.status === 'Maintenance').length,
+    };
+
     res.render('admin/rooms', {
       title: 'Room Management',
       admin,
       rooms,
+      stats,
       errors: req.flash('error'),
       success: req.flash('success'),
     });
@@ -124,8 +133,9 @@ exports.getRooms = async (req, res) => {
 
 exports.createRoom = async (req, res) => {
   try {
-    const { roomNumber, floor, capacity, monthlyFee } = req.body;
-    await Room.create({ roomNumber, floor, capacity, monthlyFee });
+    const { roomNumber, floor, block, type, capacity, monthlyFee, amenities } = req.body;
+    const amenitiesArr = amenities ? amenities.split(',').map((a) => a.trim()).filter(Boolean) : [];
+    await Room.create({ roomNumber, floor: Number(floor), block, type, capacity: Number(capacity), monthlyFee: Number(monthlyFee), amenities: amenitiesArr });
     req.flash('success', `Room ${roomNumber} created.`);
     res.redirect('/admin/rooms');
   } catch (err) {
@@ -136,8 +146,11 @@ exports.createRoom = async (req, res) => {
 
 exports.updateRoom = async (req, res) => {
   try {
-    const { roomNumber, floor, capacity, status, monthlyFee } = req.body;
-    await Room.findByIdAndUpdate(req.params.id, { roomNumber, floor, capacity, status, monthlyFee });
+    const { roomNumber, floor, block, type, capacity, status, monthlyFee, amenities } = req.body;
+    const amenitiesArr = amenities ? amenities.split(',').map((a) => a.trim()).filter(Boolean) : [];
+    await Room.findByIdAndUpdate(req.params.id, {
+      roomNumber, floor: Number(floor), block, type, capacity: Number(capacity), status, monthlyFee: Number(monthlyFee), amenities: amenitiesArr,
+    });
     req.flash('success', 'Room updated.');
     res.redirect('/admin/rooms');
   } catch (err) {
@@ -167,18 +180,74 @@ exports.getAllocate = async (req, res) => {
   try {
     const admin = await Admin.findById(req.session.adminId);
     const waitingUsers = await User.find({ roomStatus: 'Waiting' });
-    const availableRooms = await Room.find({ status: 'Available' }).populate('occupants', 'name');
+    const availableRooms = await Room.find({ status: 'Available' }).populate('occupants', 'name preferences');
+
+    const filteredRooms = availableRooms.filter((r) => r.occupants.length < r.capacity);
+
+    // Pre-compute top-3 suggestions per waiting student
+    const suggestions = {};
+    for (const user of waitingUsers) {
+      const scored = getRoomSuggestions(user, availableRooms).slice(0, 3);
+      suggestions[user._id.toString()] = scored.map((s) => ({
+        roomId:     s.room._id,
+        roomNumber: s.room.roomNumber,
+        floor:      s.room.floor,
+        block:      s.room.block,
+        type:       s.room.type,
+        occupancy:  `${s.room.occupants.length}/${s.room.capacity}`,
+        monthlyFee: s.room.monthlyFee,
+        percentage: s.score.percentage,
+        matched:    s.score.matched,
+        unmatched:  s.score.unmatched,
+        emptyRoom:  s.score.emptyRoom,
+      }));
+    }
 
     res.render('admin/allocate', {
       title: 'Room Allocation',
       admin,
       waitingUsers,
-      availableRooms: availableRooms.filter((r) => r.occupants.length < r.capacity),
+      availableRooms: filteredRooms,
+      suggestions: JSON.stringify(suggestions),
       errors: req.flash('error'),
       success: req.flash('success'),
     });
   } catch (err) {
+    console.error(err);
     res.redirect('/admin/dashboard');
+  }
+};
+
+// AJAX: Get suggestions for a single student (used by allocate page JS)
+exports.getAllocateSuggestions = async (req, res) => {
+  try {
+    const { userId } = req.query;
+    if (!userId) return res.json({ suggestions: [] });
+
+    const user = await User.findById(userId);
+    if (!user) return res.json({ suggestions: [] });
+
+    const availableRooms = await Room.find({ status: 'Available' }).populate('occupants', 'name preferences');
+    const scored = getRoomSuggestions(user, availableRooms).slice(0, 5);
+
+    const suggestions = scored.map((s) => ({
+      roomId:     s.room._id,
+      roomNumber: s.room.roomNumber,
+      floor:      s.room.floor,
+      block:      s.room.block,
+      type:       s.room.type,
+      occupancy:  `${s.room.occupants.length}/${s.room.capacity}`,
+      monthlyFee: s.room.monthlyFee,
+      percentage: s.score.percentage,
+      matched:    s.score.matched,
+      unmatched:  s.score.unmatched,
+      emptyRoom:  s.score.emptyRoom,
+    }));
+
+    res.json({ suggestions });
+  } catch (err) {
+    console.error(err);
+    res.json({ suggestions: [] });
   }
 };
 
@@ -216,6 +285,50 @@ exports.manualAllocate = async (req, res) => {
     res.redirect('/admin/allocate');
   } catch (err) {
     req.flash('error', 'Allocation failed.');
+    res.redirect('/admin/allocate');
+  }
+};
+
+// Reassign a student to a different room
+exports.reassignRoom = async (req, res) => {
+  try {
+    const { userId, roomId } = req.body;
+    const user = await User.findById(userId).populate('roomId');
+    const newRoom = await Room.findById(roomId);
+
+    if (!user || !newRoom || newRoom.occupants.length >= newRoom.capacity) {
+      req.flash('error', 'Invalid reassignment: room full or not found.');
+      return res.redirect('/admin/allocate');
+    }
+
+    // Remove from old room
+    if (user.roomId) {
+      await Room.findByIdAndUpdate(user.roomId._id, {
+        $pull: { occupants: user._id },
+        $set: { status: 'Available' },
+      });
+    }
+
+    // Add to new room
+    newRoom.occupants.push(user._id);
+    if (newRoom.occupants.length >= newRoom.capacity) newRoom.status = 'Full';
+    await newRoom.save();
+
+    user.roomId = newRoom._id;
+    user.roomStatus = 'Allocated';
+    await user.save();
+
+    await Notification.create({
+      title: 'Room Reassigned',
+      message: `You have been reassigned to Room ${newRoom.roomNumber}.`,
+      type: 'system',
+    });
+
+    req.flash('success', `${user.name} reassigned to Room ${newRoom.roomNumber}.`);
+    res.redirect('/admin/allocate');
+  } catch (err) {
+    console.error(err);
+    req.flash('error', 'Reassignment failed.');
     res.redirect('/admin/allocate');
   }
 };

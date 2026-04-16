@@ -1,7 +1,7 @@
 <%- include('../partials/header') %>
 
 <div class="auth-page">
-  <div class="auth-card" style="max-width:520px;">
+  <div class="auth-card" style="max-width:540px;">
     <div class="auth-header">
       <div class="auth-logo"><i class="fas fa-user-plus"></i></div>
       <h2>Create Account</h2>
@@ -57,39 +57,73 @@
         </div>
       </div>
 
-      <h3 style="font-size:0.95rem;margin:1.25rem 0 0.75rem;display:flex;align-items:center;gap:8px;">
-        <i class="fas fa-sliders-h" style="color:var(--primary)"></i> Roommate Preferences
-      </h3>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label for="sleepSchedule">Sleep Schedule</label>
-          <select id="sleepSchedule" name="sleepSchedule" class="form-control">
-            <option value="Early Bird">Early Bird</option>
-            <option value="Night Owl">Night Owl</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="food">Food Preference</label>
-          <select id="food" name="food" class="form-control">
-            <option value="Veg">Vegetarian</option>
-            <option value="Non-Veg">Non-Vegetarian</option>
-          </select>
+      <!-- Roommate Preferences -->
+      <div class="pref-section-header" style="margin:1.5rem 0 1rem;">
+        <i class="fas fa-sliders-h" style="color:var(--primary);font-size:1.1rem;"></i>
+        <div>
+          <h3 class="pref-section-title">Roommate Preferences</h3>
+          <p class="pref-section-sub">These help us find your best-matching room</p>
         </div>
       </div>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label for="lifestyle">Lifestyle</label>
-          <select id="lifestyle" name="lifestyle" class="form-control">
-            <option value="Quiet">Quiet</option>
-            <option value="Social"> Social</option>
-          </select>
+      <div class="pref-grid pref-grid-reg">
+        <!-- Sleep -->
+        <div class="pref-card">
+          <div class="pref-card-icon"><i class="fas fa-moon"></i></div>
+          <div class="pref-card-body">
+            <label class="pref-label">🌙 Sleep Schedule</label>
+            <select name="sleepSchedule" class="form-control">
+              <option value="Early Bird">🌅 Early Bird</option>
+              <option value="Night Owl">🌙 Night Owl</option>
+            </select>
+            <label class="pref-priority-label">How important?</label>
+            <select name="sleepPriority" class="form-control pref-priority-select">
+              <option value="1">⬇ Low</option>
+              <option value="2">➡ Medium</option>
+              <option value="3">⬆ High</option>
+            </select>
+          </div>
         </div>
-        <div class="form-group">
-          <label for="profileImage"><i class="fas fa-camera"></i> Profile Photo</label>
-          <input type="file" id="profileImage" name="profileImage" class="form-control" accept="image/*" onchange="previewImage(this)" />
+
+        <!-- Food -->
+        <div class="pref-card">
+          <div class="pref-card-icon"><i class="fas fa-utensils"></i></div>
+          <div class="pref-card-body">
+            <label class="pref-label">🥬 Food Preference</label>
+            <select name="food" class="form-control">
+              <option value="Veg" selected>🥬 Vegetarian</option>
+            </select>
+            <label class="pref-priority-label">How important?</label>
+            <select name="foodPriority" class="form-control pref-priority-select">
+              <option value="1">⬇ Low</option>
+              <option value="2">➡ Medium</option>
+              <option value="3">⬆ High</option>
+            </select>
+          </div>
         </div>
+
+        <!-- Lifestyle -->
+        <div class="pref-card">
+          <div class="pref-card-icon"><i class="fas fa-users"></i></div>
+          <div class="pref-card-body">
+            <label class="pref-label">🎯 Lifestyle</label>
+            <select name="lifestyle" class="form-control">
+              <option value="Quiet">🤫 Quiet</option>
+              <option value="Social">🎉 Social</option>
+            </select>
+            <label class="pref-priority-label">How important?</label>
+            <select name="lifestylePriority" class="form-control pref-priority-select">
+              <option value="1">⬇ Low</option>
+              <option value="2">➡ Medium</option>
+              <option value="3">⬆ High</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="profileImage"><i class="fas fa-camera"></i> Profile Photo</label>
+        <input type="file" id="profileImage" name="profileImage" class="form-control" accept="image/*" onchange="previewImage(this)" />
       </div>
 
       <img id="imagePreview" class="image-preview hidden" alt="Preview" />
@@ -108,18 +142,18 @@
 <%- include('../partials/footer') %>
 
 <script>
-  function previewImage(input) {
-    const preview = document.getElementById('imagePreview');
-    if (input.files && input.files[0]) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        preview.src = e.target.result;
-        preview.classList.remove('hidden');
-      }
-      reader.readAsDataURL(input.files[0]);
-    } else {
-      preview.src = '';
-      preview.classList.add('hidden');
-    }
+function previewImage(input) {
+  const preview = document.getElementById('imagePreview');
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      preview.src = e.target.result;
+      preview.classList.remove('hidden');
+    };
+    reader.readAsDataURL(input.files[0]);
+  } else {
+    preview.src = '';
+    preview.classList.add('hidden');
   }
+}
 </script>

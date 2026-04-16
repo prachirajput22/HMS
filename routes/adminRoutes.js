@@ -12,6 +12,7 @@ const complaintController = require('../controllers/complaintController');
 const attendanceController = require('../controllers/attendanceController');
 const notificationController = require('../controllers/notificationController');
 const feedbackController = require('../controllers/feedbackController');
+
 // Admin Root Redirect
 router.get('/', (req, res) => res.redirect('/admin/login'));
 
@@ -35,8 +36,10 @@ router.post('/rooms/:id/delete', isAdmin, adminController.deleteRoom);
 
 // Allocation
 router.get('/allocate', isAdmin, adminController.getAllocate);
+router.get('/allocate/suggestions', isAdmin, adminController.getAllocateSuggestions);
 router.post('/allocate/manual', isAdmin, adminController.manualAllocate);
 router.post('/allocate/auto', isAdmin, adminController.autoAllocate);
+router.post('/allocate/reassign', isAdmin, adminController.reassignRoom);
 
 // Payments
 router.get('/payments', isAdmin, adminController.getPayments);
@@ -57,6 +60,7 @@ router.post('/notifications/:id/delete', isAdmin, notificationController.deleteN
 
 // Feedback
 router.get('/feedback', isAdmin, feedbackController.adminGetFeedback);
+router.post('/feedback/:id/delete', isAdmin, feedbackController.deleteFeedback);
 
 // Search
 router.get('/search', isAdmin, adminController.getSearch);

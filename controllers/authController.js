@@ -20,7 +20,11 @@ exports.getRegister = (req, res) => {
 // POST /register
 exports.postRegister = async (req, res) => {
   try {
-    const { name, email, password, age, gender, course, phone, sleepSchedule, food, lifestyle } = req.body;
+    const {
+      name, email, password, age, gender, course, phone,
+      sleepSchedule, food, lifestyle,
+      sleepPriority, foodPriority, lifestylePriority,
+    } = req.body;
 
     // Check duplicate email
     const existing = await User.findOne({ email });
@@ -41,7 +45,16 @@ exports.postRegister = async (req, res) => {
       course,
       phone,
       profileImage,
-      preferences: { sleepSchedule, food, lifestyle },
+      preferences: {
+        sleepSchedule,
+        food,
+        lifestyle,
+        priorities: {
+          sleepSchedule: Math.min(3, Math.max(1, parseInt(sleepPriority) || 1)),
+          food:          Math.min(3, Math.max(1, parseInt(foodPriority) || 1)),
+          lifestyle:     Math.min(3, Math.max(1, parseInt(lifestylePriority) || 1)),
+        },
+      },
     });
 
     req.session.userId = user._id;

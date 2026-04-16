@@ -1,16 +1,149 @@
 // ============================================================
-// Smart Roommate Matching Utility
+// Smart Roommate Matching Utility — Weighted Priority Engine
 // ============================================================
-// Scores compatibility between a requesting user and existing
-// room occupants. Returns the best available room.
+// Scoring formula:
+//   finalScore = Σ(matched × weight) / Σ(all weights) × 100
+//
+// Weight comes from user.preferences.priorities (1=Low, 2=Medium, 3=High)
+// Each criterion contributes proportionally to its weight.
+// ============================================================
 
 const Room = require('../models/Room');
-const User = require('../models/User');
 
-/**
- * Calculate compatibility score between two preference sets.
- * Max score = 3 (one point per matching preference)
- */
+// -------------------------------------------------------------
+// CRITERIA DEFINITIONS
+// Extensible: add new criteria here without changing the engine
+// -------------------------------------------------------------
+const CRITERIA = [
+  {
+    key: 'sleepSchedule',
+    label: 'Sleep Schedule',
+    icon: '🌙',
+    // Compare user pref vs occupant pref
+    match: (userPrefs, occupantPrefs) =>
+      userPrefs.sleepSchedule === occupantPrefs.sleepSchedule,
+  },
+  {
+    key: 'food',
+    label: 'Food Preference',
+    icon: '🥬',
+    match: (userPrefs, occupantPrefs) =>
+      userPrefs.food === occupantPrefs.food,
+  },
+  {
+    key: 'lifestyle',
+    label: 'Lifestyle',
+    icon: '🎯',
+    match: (userPrefs, occupantPrefs) =>
+      userPrefs.lifestyle === occupantPrefs.lifestyle,
+  },
+];
+
+// -------------------------------------------------------------
+// getUserWeight — resolve priority weight from user preferences
+// Falls back to 1 (Low) if priorities not set
+// -------------------------------------------------------------
+const getUserWeight = (user, criterionKey) => {
+  return (user.preferences?.priorities?.[criterionKey]) || 1;
+};
+
+// -------------------------------------------------------------
+// calculateMatchScore
+//   Computes weighted match between a requesting user and a room.
+//   For empty rooms → score 50 (neutral match, preferred over 0).
+//   For rooms with occupants → average weighted score per occupant.
+//
+// Returns:
+//   {
+//     percentage: Number (0-100),
+//     matched:    String[] (labels of matched criteria),
+//     unmatched:  String[] (labels of unmatched criteria),
+//     breakdown:  [{ criterion, label, icon, weight, matched, contribution }]
+//   }
+// -------------------------------------------------------------
+const calculateMatchScore = (user, room) => {
+  const userPrefs = user.preferences || {};
+  const priorities = userPrefs.priorities || {};
+
+  // Compute total possible weight sum
+  const totalWeight = CRITERIA.reduce((sum, c) => sum + (priorities[c.key] || 1), 0);
+
+  if (!room.occupants || room.occupants.length === 0) {
+    // Empty room: give a neutral score of 50%
+    // Build breakdown with "unknown" matches since no occupants
+    const breakdown = CRITERIA.map((c) => ({
+      criterion:    c.key,
+      label:        c.label,
+      icon:         c.icon,
+      weight:       priorities[c.key] || 1,
+      matched:      null, // unknown — no occupants to compare
+      contribution: 0,
+    }));
+    return {
+      percentage: 50,
+      matched:    [],
+      unmatched:  [],
+      breakdown,
+      emptyRoom:  true,
+    };
+  }
+
+  // For rooms with occupants: average score across all occupants
+  const occupantScores = room.occupants.map((occupant) => {
+    const occPrefs = occupant.preferences || {};
+    let weightedScore = 0;
+
+    const breakdown = CRITERIA.map((c) => {
+      const weight = priorities[c.key] || 1;
+      const isMatch = c.match(userPrefs, occPrefs);
+      const contribution = isMatch ? weight : 0;
+      weightedScore += contribution;
+      return {
+        criterion:    c.key,
+        label:        c.label,
+        icon:         c.icon,
+        weight,
+        matched:      isMatch,
+        contribution,
+      };
+    });
+
+    return { weightedScore, breakdown };
+  });
+
+  // Average across all occupants
+  const avgWeightedScore =
+    occupantScores.reduce((sum, o) => sum + o.weightedScore, 0) /
+    occupantScores.length;
+
+  const percentage = Math.round((avgWeightedScore / totalWeight) * 100);
+
+  // Build aggregate breakdown (majority vote per criterion across occupants)
+  const breakdown = CRITERIA.map((c) => {
+    const weight = priorities[c.key] || 1;
+    const matchCount = occupantScores.filter(
+      (o) => o.breakdown.find((b) => b.criterion === c.key)?.matched
+    ).length;
+    const isMatch = matchCount > room.occupants.length / 2;
+    return {
+      criterion:    c.key,
+      label:        c.label,
+      icon:         c.icon,
+      weight,
+      matched:      isMatch,
+      contribution: isMatch ? weight : 0,
+    };
+  });
+
+  const matched   = breakdown.filter((b) => b.matched).map((b) => `${b.icon} ${b.label}`);
+  const unmatched = breakdown.filter((b) => !b.matched).map((b) => `${b.icon} ${b.label}`);
+
+  return { percentage, matched, unmatched, breakdown, emptyRoom: false };
+};
+
+// -------------------------------------------------------------
+// compatibilityScore — legacy equal-weight score (for roommate display)
+// -------------------------------------------------------------
 const compatibilityScore = (prefsA, prefsB) => {
   let score = 0;
   if (prefsA.sleepSchedule === prefsB.sleepSchedule) score++;
@@ -19,57 +152,56 @@ const compatibilityScore = (prefsA, prefsB) => {
   return score;
 };
 
-/**
- * Calculate compatibility percentage between two users
- */
+// -------------------------------------------------------------
+// compatibilityPercentage — legacy helper (still used in userController)
+// -------------------------------------------------------------
 const compatibilityPercentage = (prefsA, prefsB) => {
-  const score = compatibilityScore(prefsA, prefsB);
-  return Math.round((score / 3) * 100);
+  return Math.round((compatibilityScore(prefsA, prefsB) / 3) * 100);
 };
 
-/**
- * Find the best matching room for a user.
- * - Filters rooms that are Available and have capacity
- * - Scores each room based on average preference match with existing occupants
- * - Returns the highest-scored room, or null if none available
- */
-const findBestRoom = async (requestingUser) => {
-  // Get all rooms with available slots
-  const rooms = await Room.find({ status: 'Available' }).populate('occupants');
-
-  // Filter rooms with open slots
+// -------------------------------------------------------------
+// getRoomSuggestions
+//   Returns available rooms sorted by match score (desc).
+//   Each entry: { room, score: { percentage, matched, unmatched, breakdown } }
+// -------------------------------------------------------------
+const getRoomSuggestions = (user, rooms) => {
   const available = rooms.filter(
-    (room) => room.occupants.length < room.capacity
+    (r) => r.status === 'Available' && r.occupants.length < r.capacity
   );
 
-  if (available.length === 0) return null;
+  const scored = available.map((room) => ({
+    room,
+    score: calculateMatchScore(user, room),
+  }));
 
-  let bestRoom = null;
-  let bestScore = -1;
-
-  for (const room of available) {
-    if (room.occupants.length === 0) {
-      // Empty room: score = 1 (valid, but not preferred over a matched room)
-      if (bestScore < 1) {
-        bestScore = 1;
-        bestRoom = room;
-      }
-      continue;
+  // Sort: higher percentage first; ties: non-empty rooms first
+  scored.sort((a, b) => {
+    if (b.score.percentage !== a.score.percentage) {
+      return b.score.percentage - a.score.percentage;
     }
+    // Prefer rooms with existing occupants (proven compatibility) over empty
+    const aEmpty = a.score.emptyRoom ? 1 : 0;
+    const bEmpty = b.score.emptyRoom ? 1 : 0;
+    return aEmpty - bEmpty;
+  });
 
-    // Score against all current occupants, take average
-    const scores = room.occupants.map((occupant) =>
-      compatibilityScore(requestingUser.preferences, occupant.preferences)
-    );
-    const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
-
-    if (avgScore > bestScore) {
-      bestScore = avgScore;
-      bestRoom = room;
-    }
-  }
-
-  return bestRoom;
+  return scored;
 };
 
-module.exports = { findBestRoom, compatibilityScore, compatibilityPercentage };
+// -------------------------------------------------------------
+// findBestRoom — backward-compatible entry point
+//   Used by userController.postRoomRequest and adminController.autoAllocate
+// -------------------------------------------------------------
+const findBestRoom = async (requestingUser) => {
+  const rooms = await Room.find({ status: 'Available' }).populate('occupants');
+  const suggestions = getRoomSuggestions(requestingUser, rooms);
+  return suggestions.length > 0 ? suggestions[0].room : null;
+};
+
+module.exports = {
+  findBestRoom,
+  calculateMatchScore,
+  getRoomSuggestions,
+  compatibilityScore,
+  compatibilityPercentage,
+};

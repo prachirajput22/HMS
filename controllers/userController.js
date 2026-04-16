@@ -74,14 +74,27 @@ exports.getProfile = async (req, res) => {
 
 exports.updateProfile = async (req, res) => {
   try {
-    const { name, age, gender, course, phone, sleepSchedule, food, lifestyle } = req.body;
+    const {
+      name, age, gender, course, phone,
+      sleepSchedule, food, lifestyle,
+      sleepPriority, foodPriority, lifestylePriority,
+    } = req.body;
     const update = {
       name,
       age,
       gender,
       course,
       phone,
-      preferences: { sleepSchedule, food, lifestyle },
+      preferences: {
+        sleepSchedule,
+        food,
+        lifestyle,
+        priorities: {
+          sleepSchedule: Math.min(3, Math.max(1, parseInt(sleepPriority) || 1)),
+          food:          Math.min(3, Math.max(1, parseInt(foodPriority) || 1)),
+          lifestyle:     Math.min(3, Math.max(1, parseInt(lifestylePriority) || 1)),
+        },
+      },
     };
     if (req.file) {
       update.profileImage = '/uploads/profiles/' + req.file.filename;

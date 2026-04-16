@@ -12,93 +12,171 @@
         <% errors.forEach(e => { %><div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <%= e %></div><% }) %>
       <% } %>
 
-      <!-- Auto Allocate -->
-      <div class="glass-card mb-3">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
-          <div>
-            <h3 style="margin-bottom:4px;"><i class="fas fa-magic" style="color:var(--primary)"></i> Smart Allocation</h3>
-            <p class="text-muted" style="font-size:0.85rem;">
-              Automatically allocate rooms to all waiting students using preference-based matching.
-              <strong><%= waitingUsers.length %></strong> student(s) waiting.
-            </p>
-          </div>
-          <% if (waitingUsers.length > 0) { %>
-            <form action="/admin/allocate/auto" method="POST">
-              <button type="submit" class="btn btn-primary" onclick="return confirm('Auto-allocate all waiting students?')">
-                <i class="fas fa-magic"></i> Auto Allocate All
-              </button>
-            </form>
-          <% } %>
+      <!-- Page Header -->
+      <div class="alloc-page-header">
+        <div>
+          <h1 class="alloc-page-title"><i class="fas fa-magic"></i> Room Allocation</h1>
+          <p class="alloc-page-sub">Smart preference-based matching with weighted priority scoring</p>
         </div>
-      </div>
-
-      <!-- Manual Allocation -->
-      <% if (waitingUsers.length > 0 && availableRooms.length > 0) { %>
-        <div class="glass-card mb-3">
-          <h3 style="margin-bottom:1rem;"><i class="fas fa-hand-pointer" style="color:var(--accent)"></i> Manual Allocation</h3>
-          <form action="/admin/allocate/manual" method="POST">
-            <div class="form-row">
-              <div class="form-group">
-                <label for="userId">Select Student</label>
-                <select id="userId" name="userId" class="form-control" required>
-                  <% waitingUsers.forEach(u => { %>
-                    <option value="<%= u._id %>"><%= u.name %> (<%= u.email %>)</option>
-                  <% }) %>
-                </select>
-              </div>
-              <div class="form-group">
-                <label for="roomId">Select Room</label>
-                <select id="roomId" name="roomId" class="form-control" required>
-                  <% availableRooms.forEach(r => { %>
-                    <option value="<%= r._id %>">Room <%= r.roomNumber %> — Floor <%= r.floor %> (<%= r.occupants.length %>/<%= r.capacity %>)</option>
-                  <% }) %>
-                </select>
-              </div>
-            </div>
+        <% if (waitingUsers.length > 0 && availableRooms.length > 0) { %>
+          <form action="/admin/allocate/auto" method="POST" onsubmit="return confirm('Auto-allocate all <%= waitingUsers.length %> waiting student(s) using best match?')">
             <button type="submit" class="btn btn-primary">
-              <i class="fas fa-key"></i> Allocate Room
+              <i class="fas fa-magic"></i> Auto-Allocate All (<%= waitingUsers.length %>)
             </button>
           </form>
-        </div>
-      <% } %>
-
-      <!-- Waiting Students -->
-      <div class="section-header">
-        <h3><i class="fas fa-users"></i> Waiting Students (<%= waitingUsers.length %>)</h3>
+        <% } %>
       </div>
+
+      <!-- Summary Cards -->
+      <div class="alloc-summary-row">
+        <div class="alloc-sum-card blue">
+          <div class="alloc-sum-icon"><i class="fas fa-user-clock"></i></div>
+          <div>
+            <div class="alloc-sum-num"><%= waitingUsers.length %></div>
+            <div class="alloc-sum-lbl">Waiting</div>
+          </div>
+        </div>
+        <div class="alloc-sum-card green">
+          <div class="alloc-sum-icon"><i class="fas fa-door-open"></i></div>
+          <div>
+            <div class="alloc-sum-num"><%= availableRooms.length %></div>
+            <div class="alloc-sum-lbl">Available Rooms</div>
+          </div>
+        </div>
+        <div class="alloc-sum-card purple">
+          <div class="alloc-sum-icon"><i class="fas fa-brain"></i></div>
+          <div>
+            <div class="alloc-sum-num">AI</div>
+            <div class="alloc-sum-lbl">Weighted Match</div>
+          </div>
+        </div>
+      </div>
+
       <% if (waitingUsers.length === 0) { %>
         <div class="empty-state">
-          <i class="fas fa-check-circle"></i>
+          <i class="fas fa-check-circle" style="color:var(--success)"></i>
           <h4>All Clear!</h4>
-          <p>No students are waiting for room allocation.</p>
+          <p>No students are currently waiting for room allocation.</p>
         </div>
       <% } else { %>
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Course</th>
-                <th>Sleep</th>
-                <th>Food</th>
-                <th>Lifestyle</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% waitingUsers.forEach(u => { %>
-                <tr>
-                  <td><strong><%= u.name %></strong></td>
-                  <td><%= u.email %></td>
-                  <td><%= u.course || '—' %></td>
-                  <td><span class="badge badge-info"><%= u.preferences.sleepSchedule %></span></td>
-                  <td><span class="badge badge-primary"><%= u.preferences.food %></span></td>
-                  <td><span class="badge badge-purple"><%= u.preferences.lifestyle %></span></td>
-                </tr>
-              <% }) %>
-            </tbody>
-          </table>
+
+        <!-- Student Cards -->
+        <div class="alloc-students-grid">
+          <% waitingUsers.forEach((u, idx) => { %>
+            <div class="alloc-student-card" id="student-card-<%= u._id %>">
+              <div class="alloc-student-header">
+                <div class="alloc-avatar">
+                  <%= u.name.charAt(0).toUpperCase() %>
+                </div>
+                <div class="alloc-student-info">
+                  <div class="alloc-student-name"><%= u.name %></div>
+                  <div class="alloc-student-email"><%= u.email %></div>
+                  <div class="alloc-student-meta">
+                    <% if (u.course) { %><span class="badge badge-info"><i class="fas fa-graduation-cap"></i> <%= u.course %></span><% } %>
+                    <span class="badge badge-warning"><i class="fas fa-clock"></i> Waiting</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Preference Summary -->
+              <div class="alloc-prefs-row">
+                <div class="alloc-pref-chip">
+                  <span class="alloc-pref-label">💤 Sleep</span>
+                  <span class="alloc-pref-val"><%= u.preferences.sleepSchedule %></span>
+                  <span class="alloc-pref-priority" title="Priority weight">
+                    <% const sp = u.preferences?.priorities?.sleepSchedule || 1; %>
+                    <% for(let i=1;i<=3;i++) { %><i class="fas fa-circle" style="opacity:<%= i<=sp?1:0.2 %>;font-size:6px;color:var(--primary)"></i><% } %>
+                  </span>
+                </div>
+                <div class="alloc-pref-chip">
+                  <span class="alloc-pref-label">🥬 Food</span>
+                  <span class="alloc-pref-val"><%= u.preferences.food %></span>
+                  <span class="alloc-pref-priority">
+                    <% const fp = u.preferences?.priorities?.food || 1; %>
+                    <% for(let i=1;i<=3;i++) { %><i class="fas fa-circle" style="opacity:<%= i<=fp?1:0.2 %>;font-size:6px;color:var(--primary)"></i><% } %>
+                  </span>
+                </div>
+                <div class="alloc-pref-chip">
+                  <span class="alloc-pref-label">🎯 Style</span>
+                  <span class="alloc-pref-val"><%= u.preferences.lifestyle %></span>
+                  <span class="alloc-pref-priority">
+                    <% const lp = u.preferences?.priorities?.lifestyle || 1; %>
+                    <% for(let i=1;i<=3;i++) { %><i class="fas fa-circle" style="opacity:<%= i<=lp?1:0.2 %>;font-size:6px;color:var(--primary)"></i><% } %>
+                  </span>
+                </div>
+              </div>
+
+              <!-- Top Suggestions -->
+              <% const userSuggestions = (JSON.parse(suggestions))[u._id.toString()] || []; %>
+              <% if (userSuggestions.length > 0) { %>
+                <div class="alloc-suggestions-label"><i class="fas fa-lightbulb"></i> Best Room Matches</div>
+                <div class="alloc-suggestions-list">
+                  <% userSuggestions.forEach((s, si) => { %>
+                    <div class="alloc-suggestion-item <%= si === 0 ? 'top-pick' : '' %>">
+                      <div class="alloc-suggestion-left">
+                        <% if (si === 0) { %><div class="top-pick-badge">🏆 Best</div><% } %>
+                        <div class="alloc-suggestion-room">Room <%= s.roomNumber %></div>
+                        <div class="alloc-suggestion-meta">
+                          Floor <%= s.floor %> · Block <%= s.block || 'A' %> · <%= s.type || 'Double' %> · <%= s.occupancy %>
+                        </div>
+                        <div class="alloc-suggestion-fee">₹<%= s.monthlyFee %>/mo</div>
+                        <!-- Match chips -->
+                        <div class="alloc-match-chips">
+                          <% (s.matched || []).forEach(m => { %><span class="match-chip match-yes"><i class="fas fa-check"></i> <%= m %></span><% }) %>
+                          <% (s.unmatched || []).forEach(m => { %><span class="match-chip match-no"><i class="fas fa-times"></i> <%= m %></span><% }) %>
+                          <% if (s.emptyRoom) { %><span class="match-chip match-neutral"><i class="fas fa-question"></i> Empty Room</span><% } %>
+                        </div>
+                      </div>
+                      <div class="alloc-suggestion-right">
+                        <div class="match-ring-wrap">
+                          <svg class="match-ring" viewBox="0 0 36 36">
+                            <circle class="match-ring-bg" cx="18" cy="18" r="15.9"/>
+                            <circle class="match-ring-fill
+                              <%= s.percentage >= 80 ? 'ring-high' : (s.percentage >= 50 ? 'ring-mid' : 'ring-low') %>"
+                              cx="18" cy="18" r="15.9"
+                              stroke-dasharray="<%= Math.round(s.percentage * 0.999) %>, 100"/>
+                          </svg>
+                          <div class="match-ring-pct"><%= s.percentage %>%</div>
+                        </div>
+                        <form action="/admin/allocate/manual" method="POST" style="margin-top:8px;">
+                          <input type="hidden" name="userId" value="<%= u._id %>">
+                          <input type="hidden" name="roomId" value="<%= s.roomId %>">
+                          <button class="btn btn-sm btn-primary">Allocate</button>
+                        </form>
+                      </div>
+                    </div>
+                  <% }) %>
+                </div>
+              <% } else { %>
+                <div class="alloc-no-rooms"><i class="fas fa-exclamation-triangle"></i> No available rooms match this student right now.</div>
+              <% } %>
+
+              <!-- Manual Override -->
+              <% if (availableRooms.length > 0) { %>
+              <details class="alloc-manual-details">
+                <summary><i class="fas fa-hand-pointer"></i> Manual Override</summary>
+                <form action="/admin/allocate/manual" method="POST" class="alloc-manual-form">
+                  <input type="hidden" name="userId" value="<%= u._id %>">
+                  <div style="display:flex;gap:0.5rem;align-items:flex-end;flex-wrap:wrap;">
+                    <div class="form-group" style="flex:1;min-width:180px;margin-bottom:0;">
+                      <label>Select Any Room</label>
+                      <select name="roomId" class="form-control" required>
+                        <% availableRooms.forEach(r => { %>
+                          <option value="<%= r._id %>">Room <%= r.roomNumber %> — Floor <%= r.floor %> (<%= r.occupants.length %>/<%= r.capacity %>)</option>
+                        <% }) %>
+                      </select>
+                    </div>
+                    <button type="submit" class="btn btn-secondary btn-sm">
+                      <i class="fas fa-key"></i> Allocate
+                    </button>
+                  </div>
+                </form>
+              </details>
+              <% } %>
+            </div>
+          <% }) %>
         </div>
+
       <% } %>
 
     </div>

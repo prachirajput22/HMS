@@ -5,49 +5,129 @@
     <%- include('../partials/topbar') %>
     <div class="page-content">
 
-      <!-- Average Rating -->
-      <div class="stats-grid" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr));">
-        <div class="stat-card">
-          <div class="stat-icon orange"><i class="fas fa-star"></i></div>
-          <div class="stat-info">
-            <h3><%= avgRating %>/5</h3>
-            <p>Average Rating</p>
+      <% if (success && success.length > 0) { %>
+        <% success.forEach(s => { %><div class="alert alert-success"><i class="fas fa-check-circle"></i> <%= s %></div><% }) %>
+      <% } %>
+      <% if (errors && errors.length > 0) { %>
+        <% errors.forEach(e => { %><div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <%= e %></div><% }) %>
+      <% } %>
+
+      <!-- Page Header -->
+      <div class="rooms-page-header">
+        <div>
+          <h1 class="rooms-page-title"><i class="fas fa-star"></i> Feedback Analysis</h1>
+          <p class="rooms-page-sub">Student satisfaction ratings and comments</p>
+        </div>
+      </div>
+
+      <!-- Summary Stats -->
+      <div class="rooms-stats-bar">
+        <div class="rstat-card">
+          <div class="rstat-icon orange"><i class="fas fa-star"></i></div>
+          <div class="rstat-info">
+            <div class="rstat-num"><%= avgRating %>/5</div>
+            <div class="rstat-lbl">Average Rating</div>
           </div>
         </div>
-        <div class="stat-card">
-          <div class="stat-icon blue"><i class="fas fa-comments"></i></div>
-          <div class="stat-info">
-            <h3><%= feedbacks.length %></h3>
-            <p>Total Responses</p>
+        <div class="rstat-card">
+          <div class="rstat-icon blue"><i class="fas fa-comments"></i></div>
+          <div class="rstat-info">
+            <div class="rstat-num"><%= feedbacks.length %></div>
+            <div class="rstat-lbl">Total Responses</div>
           </div>
+        </div>
+        <div class="rstat-card">
+          <div class="rstat-icon green"><i class="fas fa-smile"></i></div>
+          <div class="rstat-info">
+            <div class="rstat-num"><%= feedbacks.filter(f => f.rating >= 4).length %></div>
+            <div class="rstat-lbl">Positive (4-5★)</div>
+          </div>
+        </div>
+        <div class="rstat-card">
+          <div class="rstat-icon red"><i class="fas fa-frown"></i></div>
+          <div class="rstat-info">
+            <div class="rstat-num"><%= feedbacks.filter(f => f.rating <= 2).length %></div>
+            <div class="rstat-lbl">Negative (1-2★)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rating Distribution -->
+      <div class="glass-card mb-3">
+        <h3 style="margin-bottom:1.25rem;font-size:var(--fs-lg);"><i class="fas fa-chart-bar" style="color:var(--primary)"></i> Rating Distribution</h3>
+        <div class="rating-dist">
+          <% const maxCount = Math.max(...distribution.map(d => d.count), 1); %>
+          <% distribution.slice().reverse().forEach(d => { %>
+            <div class="dist-row">
+              <div class="dist-star-label">
+                <% for(let i=0;i<d.star;i++) { %><i class="fas fa-star" style="color:var(--warning);font-size:0.75rem;"></i><% } %>
+              </div>
+              <div class="dist-bar-wrap">
+                <div class="dist-bar-fill" style="width:<%= feedbacks.length > 0 ? Math.round((d.count/maxCount)*100) : 0 %>%;background:<%= d.star>=4?'var(--success)':(d.star===3?'var(--warning)':'var(--danger)') %>;"></div>
+              </div>
+              <div class="dist-count"><%= d.count %></div>
+            </div>
+          <% }) %>
         </div>
       </div>
 
       <!-- Feedback List -->
       <div class="section-header">
-        <h3><i class="fas fa-star"></i> All Feedback</h3>
+        <h3><i class="fas fa-list"></i> All Feedback (<%= feedbacks.length %>)</h3>
       </div>
+
       <% if (feedbacks.length === 0) { %>
-        <div class="empty-state"><i class="fas fa-star"></i><h4>No Feedback Yet</h4></div>
+        <div class="empty-state">
+          <i class="fas fa-star" style="color:var(--warning)"></i>
+          <h4>No Feedback Yet</h4>
+          <p>Students haven't submitted any feedback.</p>
+        </div>
       <% } else { %>
-        <div class="complaint-grid">
+        <div class="feedback-grid">
           <% feedbacks.forEach(fb => { %>
-            <div class="glass-card">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
-                <div>
-                  <strong><%= fb.userId ? fb.userId.name : 'Unknown' %></strong>
-                  <br><small class="text-muted"><%= fb.userId ? fb.userId.email : '' %></small>
+            <div class="fb-card glass-card">
+              <div class="fb-card-header">
+                <div class="fb-user-info">
+                  <div class="fb-avatar">
+                    <% if (fb.userId?.profileImage) { %>
+                      <img src="<%= fb.userId.profileImage %>" alt="<%= fb.userId?.name %>">
+                    <% } else { %>
+                      <%= fb.userId?.name?.charAt(0)?.toUpperCase() || '?' %>
+                    <% } %>
+                  </div>
+                  <div>
+                    <div class="fb-user-name"><%= fb.userId ? fb.userId.name : 'Unknown Student' %></div>
+                    <div class="fb-user-email"><%= fb.userId ? fb.userId.email : '' %></div>
+                  </div>
                 </div>
-                <div style="color:var(--warning);font-size:1.1rem;">
-                  <% for (let i = 1; i <= 5; i++) { %>
-                    <i class="fas fa-star" style="opacity:<%= i <= fb.rating ? '1' : '0.2' %>"></i>
-                  <% } %>
+                <div class="fb-right">
+                  <div class="fb-stars">
+                    <% for(let i=1; i<=5; i++) { %>
+                      <i class="fas fa-star" style="color:<%= i<=fb.rating ? 'var(--warning)' : 'var(--border)' %>"></i>
+                    <% } %>
+                    <span class="fb-rating-num"><%= fb.rating %>/5</span>
+                  </div>
+                  <div class="fb-date"><%= new Date(fb.createdAt).toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'}) %></div>
                 </div>
               </div>
+
               <% if (fb.comment) { %>
-                <p style="font-size:0.88rem;color:var(--text-secondary);line-height:1.6;"><%= fb.comment %></p>
+                <p class="fb-comment">"<%= fb.comment %>"</p>
+              <% } else { %>
+                <p class="fb-comment fb-no-comment"><em>No comment provided.</em></p>
               <% } %>
-              <small class="text-muted"><%= new Date(fb.createdAt).toLocaleDateString('en-IN') %></small>
+
+              <div class="fb-card-footer">
+                <span class="badge badge-<%= fb.rating >= 4 ? 'success' : (fb.rating === 3 ? 'warning' : 'danger') %>">
+                  <%= fb.rating >= 4 ? '😊 Positive' : (fb.rating === 3 ? '😐 Neutral' : '😞 Negative') %>
+                </span>
+                <form action="/admin/feedback/<%= fb._id %>/delete" method="POST"
+                      onsubmit="return confirm('Delete this feedback?')" style="display:inline;">
+                  <button type="submit" class="btn btn-sm btn-danger">
+                    <i class="fas fa-trash"></i> Delete
+                  </button>
+                </form>
+              </div>
             </div>
           <% }) %>
         </div>

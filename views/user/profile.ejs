@@ -39,22 +39,22 @@
         <form action="/profile" method="POST" enctype="multipart/form-data">
           <div class="form-row">
             <div class="form-group">
-              <label for="name">Full Name</label>
+              <label for="name"><i class="fas fa-user"></i> Full Name</label>
               <input type="text" id="name" name="name" class="form-control" value="<%= user.name %>" required />
             </div>
             <div class="form-group">
-              <label for="phone">Phone</label>
+              <label for="phone"><i class="fas fa-phone"></i> Phone</label>
               <input type="text" id="phone" name="phone" class="form-control" value="<%= user.phone || '' %>" />
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label for="age">Age</label>
+              <label for="age"><i class="fas fa-birthday-cake"></i> Age</label>
               <input type="number" id="age" name="age" class="form-control" value="<%= user.age || '' %>" min="16" max="30" />
             </div>
             <div class="form-group">
-              <label for="gender">Gender</label>
+              <label for="gender"><i class="fas fa-venus-mars"></i> Gender</label>
               <select id="gender" name="gender" class="form-control">
                 <option value="Male" <%= user.gender === 'Male' ? 'selected' : '' %>>Male</option>
                 <option value="Female" <%= user.gender === 'Female' ? 'selected' : '' %>>Female</option>
@@ -64,42 +64,77 @@
           </div>
 
           <div class="form-group">
-            <label for="course">Course</label>
+            <label for="course"><i class="fas fa-graduation-cap"></i> Course</label>
             <input type="text" id="course" name="course" class="form-control" value="<%= user.course || '' %>" />
           </div>
 
-          <h3 style="font-size:0.95rem;margin:1.25rem 0 0.75rem;display:flex;align-items:center;gap:8px;">
-            <i class="fas fa-sliders-h" style="color:var(--primary)"></i> Roommate Preferences
-          </h3>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label for="sleepSchedule">Sleep Schedule</label>
-              <select id="sleepSchedule" name="sleepSchedule" class="form-control">
-                <option value="Early Bird" <%= user.preferences.sleepSchedule === 'Early Bird' ? 'selected' : '' %>>🌅 Early Bird</option>
-                <option value="Night Owl" <%= user.preferences.sleepSchedule === 'Night Owl' ? 'selected' : '' %>>🌙 Night Owl</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="food">Food Preference</label>
-              <select id="food" name="food" class="form-control">
-                <option value="Veg" <%= user.preferences.food === 'Veg' ? 'selected' : '' %>>🥬 Vegetarian</option>
-                       </select>
+          <!-- Roommate Preferences with Priorities -->
+          <div class="pref-section-header">
+            <i class="fas fa-sliders-h"></i>
+            <div>
+              <h3 class="pref-section-title">Roommate Preferences</h3>
+              <p class="pref-section-sub">Set your preferences and how important each is to you (affects room matching score)</p>
             </div>
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label for="lifestyle">Lifestyle</label>
-              <select id="lifestyle" name="lifestyle" class="form-control">
-                <option value="Quiet" <%= user.preferences.lifestyle === 'Quiet' ? 'selected' : '' %>>🤫 Quiet</option>
-                <option value="Social" <%= user.preferences.lifestyle === 'Social' ? 'selected' : '' %>>🎉 Social</option>
-              </select>
+          <div class="pref-grid">
+            <!-- Sleep Schedule -->
+            <div class="pref-card">
+              <div class="pref-card-icon"><i class="fas fa-moon"></i></div>
+              <div class="pref-card-body">
+                <label for="sleepSchedule" class="pref-label">🌙 Sleep Schedule</label>
+                <select id="sleepSchedule" name="sleepSchedule" class="form-control">
+                  <option value="Early Bird" <%= user.preferences?.sleepSchedule === 'Early Bird' ? 'selected' : '' %>>🌅 Early Bird</option>
+                  <option value="Night Owl" <%= user.preferences?.sleepSchedule === 'Night Owl' ? 'selected' : '' %>>🌙 Night Owl</option>
+                </select>
+                <label class="pref-priority-label">Priority</label>
+                <select name="sleepPriority" class="form-control pref-priority-select">
+                  <option value="1" <%= (user.preferences?.priorities?.sleepSchedule || 1) == 1 ? 'selected' : '' %>>⬇ Low</option>
+                  <option value="2" <%= (user.preferences?.priorities?.sleepSchedule) == 2 ? 'selected' : '' %>>➡ Medium</option>
+                  <option value="3" <%= (user.preferences?.priorities?.sleepSchedule) == 3 ? 'selected' : '' %>>⬆ High</option>
+                </select>
+              </div>
             </div>
-            <div class="form-group">
-              <label for="profileImage">Profile Photo</label>
-              <input type="file" id="profileImage" name="profileImage" class="form-control" accept="image/*" onchange="previewImage(this)" />
+
+            <!-- Food Preference -->
+            <div class="pref-card">
+              <div class="pref-card-icon"><i class="fas fa-utensils"></i></div>
+              <div class="pref-card-body">
+                <label for="food" class="pref-label">🥬 Food Preference</label>
+                <select id="food" name="food" class="form-control">
+                  <option value="Veg" selected>🥬 Vegetarian</option>
+                </select>
+                <label class="pref-priority-label">Priority</label>
+                <select name="foodPriority" class="form-control pref-priority-select">
+                  <option value="1" <%= (user.preferences?.priorities?.food || 1) == 1 ? 'selected' : '' %>>⬇ Low</option>
+                  <option value="2" <%= (user.preferences?.priorities?.food) == 2 ? 'selected' : '' %>>➡ Medium</option>
+                  <option value="3" <%= (user.preferences?.priorities?.food) == 3 ? 'selected' : '' %>>⬆ High</option>
+                </select>
+              </div>
             </div>
+
+            <!-- Lifestyle -->
+            <div class="pref-card">
+              <div class="pref-card-icon"><i class="fas fa-users"></i></div>
+              <div class="pref-card-body">
+                <label for="lifestyle" class="pref-label">🎯 Lifestyle</label>
+                <select id="lifestyle" name="lifestyle" class="form-control">
+                  <option value="Quiet" <%= user.preferences?.lifestyle === 'Quiet' ? 'selected' : '' %>>🤫 Quiet</option>
+                  <option value="Social" <%= user.preferences?.lifestyle === 'Social' ? 'selected' : '' %>>🎉 Social</option>
+                </select>
+                <label class="pref-priority-label">Priority</label>
+                <select name="lifestylePriority" class="form-control pref-priority-select">
+                  <option value="1" <%= (user.preferences?.priorities?.lifestyle || 1) == 1 ? 'selected' : '' %>>⬇ Low</option>
+                  <option value="2" <%= (user.preferences?.priorities?.lifestyle) == 2 ? 'selected' : '' %>>➡ Medium</option>
+                  <option value="3" <%= (user.preferences?.priorities?.lifestyle) == 3 ? 'selected' : '' %>>⬆ High</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="profileImage"><i class="fas fa-camera"></i> Profile Photo</label>
+            <input type="file" id="profileImage" name="profileImage" class="form-control" accept="image/*" onchange="previewImage(this)" />
           </div>
 
           <img id="imagePreview" class="image-preview hidden" alt="Preview" />
@@ -113,3 +148,20 @@
   </div>
 </div>
 <%- include('../partials/footer') %>
+
+<script>
+function previewImage(input) {
+  const preview = document.getElementById('imagePreview');
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      preview.src = e.target.result;
+      preview.classList.remove('hidden');
+    };
+    reader.readAsDataURL(input.files[0]);
+  } else {
+    preview.src = '';
+    preview.classList.add('hidden');
+  }
+}
+</script>

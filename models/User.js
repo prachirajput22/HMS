@@ -16,8 +16,16 @@ const userSchema = new mongoose.Schema({
   // Roommate matching preferences
   preferences: {
     sleepSchedule: { type: String, enum: ['Early Bird', 'Night Owl'], default: 'Early Bird' },
-    food: { type: String, enum: ['Veg', 'Non-Veg'], default: 'Veg' },
-    lifestyle: { type: String, enum: ['Quiet', 'Social'], default: 'Quiet' },
+    food:          { type: String, enum: ['Veg'], default: 'Veg' },
+    lifestyle:     { type: String, enum: ['Quiet', 'Social'], default: 'Quiet' },
+
+    // Priority weights: 1 = Low, 2 = Medium, 3 = High
+    // Used by the weighted matching engine
+    priorities: {
+      sleepSchedule: { type: Number, default: 1, min: 1, max: 3 },
+      food:          { type: Number, default: 1, min: 1, max: 3 },
+      lifestyle:     { type: Number, default: 1, min: 1, max: 3 },
+    },
   },
 
   // Room status: 'Not Requested' | 'Waiting' | 'Allocated'
