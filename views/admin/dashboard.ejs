@@ -72,6 +72,109 @@
         </div>
       </div>
 
+      <!-- Waiting Pool & Smart Allocation -->
+      <div class="section-header" style="margin-top: 2rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3><i class="fas fa-users-clock"></i> Waiting Pool</h3>
+        <form action="/admin/allocate" method="POST">
+          <button type="submit" class="btn btn-primary" <%= typeof waitingUsers !== 'undefined' && waitingUsers.length === 0 ? 'disabled' : '' %>>
+            <i class="fas fa-magic"></i> Run Smart Allocation
+          </button>
+        </form>
+      </div>
+
+      <div class="glass-card" style="margin-bottom: 2rem; overflow-x: auto;">
+        <table class="table" style="width: 100%; border-collapse: collapse; min-width: 600px;">
+          <thead>
+            <tr style="border-bottom: 2px solid rgba(0,0,0,0.1); text-align: left;">
+              <th style="padding: 12px 10px;">Name</th>
+              <th style="padding: 12px 10px;">Email</th>
+              <th style="padding: 12px 10px;">Sleep Schedule</th>
+              <th style="padding: 12px 10px;">Food Preference</th>
+              <th style="padding: 12px 10px;">Lifestyle</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (typeof waitingUsers !== 'undefined' && waitingUsers.length > 0) { %>
+              <% waitingUsers.forEach(u => { %>
+                <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
+                  <td style="padding: 12px 10px; font-weight: 500;"><%= u.name %></td>
+                  <td style="padding: 12px 10px; color: var(--text-muted);"><%= u.email %></td>
+                  <td style="padding: 12px 10px;"><span class="badge badge-info"><%= u.preferences.sleepSchedule %></span></td>
+                  <td style="padding: 12px 10px;"><span class="badge badge-success"><%= u.preferences.food %></span></td>
+                  <td style="padding: 12px 10px;"><span class="badge badge-warning"><%= u.preferences.lifestyle %></span></td>
+                </tr>
+              <% }) %>
+            <% } else { %>
+              <tr>
+                <td colspan="5" style="padding: 30px; text-align: center; color: var(--text-muted);">
+                  <i class="fas fa-check-circle" style="color: var(--success); font-size: 1.5rem; margin-bottom: 0.5rem; display: block;"></i>
+                  No users are currently waiting for room allocation.
+                </td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Room-wise Occupancy Tracking -->
+      <div class="section-header" style="margin-top: 2rem; margin-bottom: 1rem;">
+        <h3><i class="fas fa-bed"></i> Room-wise Occupancy</h3>
+      </div>
+      <div class="glass-card" style="margin-bottom: 2rem; overflow-x: auto;">
+        <table class="table" style="width: 100%; border-collapse: collapse; min-width: 600px;">
+          <thead>
+            <tr style="border-bottom: 2px solid rgba(0,0,0,0.1); text-align: left;">
+              <th style="padding: 12px 10px;">Room Info</th>
+              <th style="padding: 12px 10px;">Capacity</th>
+              <th style="padding: 12px 10px;">Current Occupants</th>
+              <th style="padding: 12px 10px;">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (typeof roomsWithOccupants !== 'undefined' && roomsWithOccupants.length > 0) { %>
+              <% roomsWithOccupants.forEach(room => { %>
+                <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
+                  <td style="padding: 12px 10px; font-weight: 500;">
+                    Room <%= room.roomNumber %> <br>
+                    <small class="text-muted">Floor <%= room.floor %></small>
+                  </td>
+                  <td style="padding: 12px 10px;">
+                    <span class="badge <%= room.occupants.length >= room.capacity ? 'badge-danger' : (room.occupants.length > 0 ? 'badge-warning' : 'badge-success') %>">
+                      <%= room.occupants.length %> / <%= room.capacity %>
+                    </span>
+                  </td>
+                  <td style="padding: 12px 10px;">
+                    <% if (room.occupants.length > 0) { %>
+                      <div style="display:flex; flex-direction:column; gap:4px;">
+                      <% room.occupants.forEach(occ => { %>
+                        <div style="font-size:0.9rem;">
+                          <i class="fas fa-user" style="color:var(--primary); font-size:0.8rem; margin-right:4px;"></i> <%= occ.name %>
+                          <span style="font-size:0.8rem; color:var(--text-muted); margin-left:4px;">
+                            [<%= occ.preferences.sleepSchedule.charAt(0) %>|<%= occ.preferences.food.charAt(0) %>|<%= occ.preferences.lifestyle.charAt(0) %>]
+                          </span>
+                        </div>
+                      <% }) %>
+                      </div>
+                    <% } else { %>
+                      <span class="text-muted"><i class="fas fa-ghost"></i> Currently Empty</span>
+                    <% } %>
+                  </td>
+                  <td style="padding: 12px 10px;">
+                    <span class="badge <%= room.status === 'Available' ? 'badge-success' : (room.status === 'Full' ? 'badge-danger' : 'badge-warning') %>"><%= room.status %></span>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } else { %>
+              <tr>
+                <td colspan="4" style="padding: 30px; text-align: center; color: var(--text-muted);">
+                  No rooms exist in the directory.
+                </td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+
       <!-- Charts -->
       <div class="chart-grid">
         <div class="chart-card">

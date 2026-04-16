@@ -176,11 +176,37 @@ let lastTimestamp = new Date(0).toISOString();
 let currentUserId = '';
 let chatPollingInterval = null;
 
-function initChat(userId) {
+function timeAgo(dateInput) {
+  if (!dateInput) return '';
+  const date = new Date(dateInput);
+  const seconds = Math.round((new Date() - date) / 1000);
+  const minutes = Math.round(seconds / 60);
+  const hours = Math.round(minutes / 60);
+  const days = Math.round(hours / 24);
+
+  if (seconds < 30) return 'Just now';
+  if (seconds < 60) return seconds + ' secs ago';
+  if (minutes < 60) return minutes + ' mins ago';
+  if (hours < 24) return hours + ' hours ago';
+  if (days === 1) return 'Yesterday';
+  return days + ' days ago';
+}
+
+function updateTimestamps() {
+  document.querySelectorAll('.chat-time[data-timestamp]').forEach(el => {
+    el.textContent = timeAgo(el.getAttribute('data-timestamp'));
+  });
+}
+
+function initChat(userId, initialTimestamp) {
   currentUserId = userId;
+  if (initialTimestamp) lastTimestamp = initialTimestamp;
+  updateTimestamps();
   scrollToBottom();
   // Start polling every 3 seconds
   chatPollingInterval = setInterval(pollMessages, 3000);
+  // Update timestamps every minute
+  setInterval(updateTimestamps, 60000);
 }
 
 function scrollToBottom() {
@@ -233,11 +259,15 @@ function appendMessage(msg, isMe) {
   const container = document.getElementById('chatMessages');
   if (!container) return;
 
+  const emptyState = container.querySelector('.empty-state');
+  if (emptyState) emptyState.remove();
+
   const div = document.createElement('div');
   div.className = 'chat-msg ' + (isMe ? 'chat-msg-me' : 'chat-msg-other');
 
   const initial = msg.sender.name ? msg.sender.name.charAt(0).toUpperCase() : '?';
-  const time = new Date(msg.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+  const time = timeAgo(msg.timestamp);
+  const timeAttr = 'data-timestamp="' + escapeHtml(msg.timestamp) + '"';
 
   if (!isMe) {
     const avatarHtml = msg.sender.profileImage
@@ -248,18 +278,43 @@ function appendMessage(msg, isMe) {
       '<div class="chat-bubble-wrap">' +
       '<span class="chat-name">' + escapeHtml(msg.sender.name) + '</span>' +
       '<div class="chat-bubble">' + escapeHtml(msg.message) + '</div>' +
-      '<span class="chat-time">' + time + '</span>' +
+      '<span class="chat-time" ' + timeAttr + '>' + time + '</span>' +
       '</div>';
   } else {
     div.innerHTML =
       '<div class="chat-bubble-wrap">' +
       '<div class="chat-bubble">' + escapeHtml(msg.message) + '</div>' +
-      '<span class="chat-time">' + time + '</span>' +
+      '<span class="chat-time" ' + timeAttr + '>' + time + '</span>' +
       '</div>';
   }
 
   container.appendChild(div);
 }
+
+// Emoji Picker Toggle logic
+function toggleEmojiPicker() {
+  const picker = document.getElementById('emojiPicker');
+  if (picker) picker.classList.toggle('hidden');
+}
+
+function insertEmoji(emoji) {
+  const input = document.getElementById('chatInput');
+  if (input) {
+    input.value += emoji;
+    input.focus();
+  }
+}
+
+// Hide emoji picker if clicked outside
+document.addEventListener('click', (e) => {
+  const picker = document.getElementById('emojiPicker');
+  const btn = document.getElementById('emojiBtn');
+  if (picker && !picker.classList.contains('hidden')) {
+    if (!picker.contains(e.target) && (!btn || !btn.contains(e.target))) {
+      picker.classList.add('hidden');
+    }
+  }
+});
 
 function escapeHtml(str) {
   if (!str) return '';

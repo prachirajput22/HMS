@@ -15,16 +15,18 @@ exports.getDashboard = async (req, res) => {
   try {
     const admin = await Admin.findById(req.session.adminId);
 
-    const [totalStudents, totalRooms, waitingCount, pendingFees, paidFees, openComplaints] = await Promise.all([
+    const [totalStudents, totalRooms, waitingUsers, pendingFees, paidFees, openComplaints] = await Promise.all([
       User.countDocuments(),
       Room.countDocuments(),
-      User.countDocuments({ roomStatus: 'Waiting' }),
+      User.find({ roomStatus: 'Waiting' }),
       Fee.countDocuments({ status: 'Pending' }),
       Fee.countDocuments({ status: 'Paid' }),
       Complaint.countDocuments({ status: 'Open' }),
     ]);
 
-    const rooms = await Room.find();
+    const waitingCount = waitingUsers.length;
+
+    const rooms = await Room.find().populate('occupants', 'name email preferences matchScore');
     const allocatedRooms = rooms.filter((r) => r.occupants.length > 0).length;
     const availableRooms = rooms.filter((r) => r.status === 'Available' && r.occupants.length < r.capacity).length;
     const fullRooms = rooms.filter((r) => r.status === 'Full').length;
@@ -66,6 +68,8 @@ exports.getDashboard = async (req, res) => {
         totalRevenue,
         pendingAmount,
       },
+      waitingUsers,
+      roomsWithOccupants: rooms,
       chartData: JSON.stringify(chartData),
       errors: req.flash('error'),
       success: req.flash('success'),
@@ -333,7 +337,7 @@ exports.reassignRoom = async (req, res) => {
   }
 };
 
-// Auto allocate all waiting users
+// Auto allocate all waiting users (Legacy AI)
 exports.autoAllocate = async (req, res) => {
   try {
     const waitingUsers = await User.find({ roomStatus: 'Waiting' });
@@ -362,6 +366,129 @@ exports.autoAllocate = async (req, res) => {
   } catch (err) {
     req.flash('error', 'Auto-allocation failed.');
     res.redirect('/admin/allocate');
+  }
+};
+
+// ===================== RUN SMART ALLOCATION =====================
+// Advanced Priority-Based Allocation Algorithm (Group Clustering)
+exports.runSmartAllocation = async (req, res) => {
+  try {
+    const admin = await Admin.findById(req.session.adminId);
+    let waitingUsers = await User.find({ roomStatus: 'Waiting' });
+    const availableRooms = await Room.find({ status: 'Available' });
+
+    let allocatedList = [];
+
+    const getMatchScore = (uPrefs, oPrefs) => {
+      let sc = 0;
+      if (uPrefs.sleepSchedule === oPrefs.sleepSchedule) sc++;
+      if (uPrefs.food === oPrefs.food) sc++;
+      if (uPrefs.lifestyle === oPrefs.lifestyle) sc++;
+      return sc;
+    };
+
+    // Calculate minimum mutual score against existing occupants
+    const getRoomMutualScore = async (user, room) => {
+      if (room.occupants.length === 0) return 3; // empty rooms don't conflict
+      let minScore = 3;
+      for (let occId of room.occupants) {
+        const occ = await User.findById(occId);
+        if(!occ) continue;
+        const sc = getMatchScore(user.preferences, occ.preferences);
+        if (sc < minScore) minScore = sc;
+      }
+      return minScore;
+    };
+
+    // Helper: find and assign an unallocated user into a room matching minScore
+    const fillPartiallyWithScore = async (minScore) => {
+      for (let room of availableRooms) {
+        if (room.occupants.length >= room.capacity) continue;
+        // Determine whether to skip empty rooms. Pass 1 specifically ignores empty rooms.
+        // Actually, Pass 3 uses this for ALL rooms (even those that stayed empty after Pass 2).
+        if (minScore === 3 && room.occupants.length === 0) continue; 
+
+        for (let i = waitingUsers.length - 1; i >= 0; i--) {
+          if (room.occupants.length >= room.capacity) break;
+          const user = waitingUsers[i];
+          const sc = await getRoomMutualScore(user, room);
+          if (sc >= minScore) {
+            room.occupants.push(user._id);
+            allocatedList.push({ user, room });
+            waitingUsers.splice(i, 1);
+          }
+        }
+      }
+    };
+
+    // Grouping helper for exact match clusters
+    const groupByPrefs = (users) => {
+      const groups = {};
+      users.forEach(u => {
+        const hash = `${u.preferences.sleepSchedule}|${u.preferences.food}|${u.preferences.lifestyle}`;
+        if (!groups[hash]) groups[hash] = [];
+        groups[hash].push(u);
+      });
+      return Object.values(groups).sort((a,b) => b.length - a.length);
+    };
+
+    // PASS 1: Score 3 on partially filled rooms
+    await fillPartiallyWithScore(3);
+
+    // PASS 2: Score 3 clustering into completely empty rooms
+    for (let room of availableRooms) {
+      if (room.occupants.length > 0) continue; 
+      let groups = groupByPrefs(waitingUsers);
+      if (groups.length === 0) break;
+
+      let bestGroup = groups[0];
+      while (room.occupants.length < room.capacity && bestGroup.length > 0) {
+        let user = bestGroup.pop();
+        room.occupants.push(user._id);
+        allocatedList.push({ user, room });
+        waitingUsers = waitingUsers.filter(u => u._id.toString() !== user._id.toString());
+      }
+    }
+
+    // PASS 3: Score >= 2 partial filling on ALL remaining slots
+    await fillPartiallyWithScore(2);
+
+    // Database Commits
+    for (let room of availableRooms) {
+      if (room.isModified('occupants')) {
+        room.status = room.occupants.length >= room.capacity ? 'Full' : 'Available';
+        await room.save();
+      }
+    }
+
+    for (let record of allocatedList) {
+      let u = record.user;
+      u.roomId = record.room._id;
+      u.roomStatus = 'Allocated';
+      await u.save();
+      
+      const dueDate = new Date();
+      dueDate.setDate(dueDate.getDate() + 30);
+      await Fee.create({ userId: u._id, roomId: record.room._id, amount: record.room.monthlyFee, dueDate });
+    }
+
+    console.log(`[Algorithm Summary] Total Allocated: ${allocatedList.length} | Remainder Waitlisted: ${waitingUsers.length}`);
+
+    // Render Detailed Summary
+    res.render('admin/allocationSummary', {
+      title: 'Smart Allocation Report',
+      admin,
+      allocatedList,
+      remainingUsers: waitingUsers,
+      totalWaitCount: waitingUsers.length + allocatedList.length,
+      errors: req.flash('error'),
+      success: [{ msg: `Smart allocation complete! Accurately allocated ${allocatedList.length} user(s).` }]
+    });
+
+  } catch (err) {
+    console.error(err);
+    req.flash('error', 'Critical Error during Allocation processing.');
+    res.redirect('/admin/dashboard');
   }
 };
 

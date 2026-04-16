@@ -39,6 +39,7 @@ router.get('/allocate', isAdmin, adminController.getAllocate);
 router.get('/allocate/suggestions', isAdmin, adminController.getAllocateSuggestions);
 router.post('/allocate/manual', isAdmin, adminController.manualAllocate);
 router.post('/allocate/auto', isAdmin, adminController.autoAllocate);
+router.post('/allocate', isAdmin, adminController.runSmartAllocation); // New route
 router.post('/allocate/reassign', isAdmin, adminController.reassignRoom);
 
 // Payments

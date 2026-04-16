@@ -25,7 +25,7 @@
           <% if (user.roomStatus === 'Allocated') { %>
             Your room is <strong><%= user.roomId ? user.roomId.roomNumber : 'N/A' %></strong> on Floor <%= user.roomId ? user.roomId.floor : 'N/A' %>
           <% } else if (user.roomStatus === 'Waiting') { %>
-            You are on the waiting list for room allocation
+            You are in waiting list. Allocation will be done soon.
           <% } else { %>
             You haven't requested a room yet. <a href="/request-room" style="color:#fff;text-decoration:underline;">Request now →</a>
           <% } %>
@@ -144,10 +144,17 @@
         <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
       </div>
       <div class="stats-grid" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr));">
-        <a href="/request-room" class="stat-card" style="text-decoration:none;cursor:pointer;">
-          <div class="stat-icon primary"><i class="fas fa-door-open"></i></div>
-          <div class="stat-info"><p style="font-weight:600;color:var(--text-primary);">Request Room</p></div>
-        </a>
+        <% if (user.roomStatus === 'Waiting' || user.roomStatus === 'Allocated') { %>
+          <div class="stat-card" style="opacity:0.5;cursor:not-allowed;" title="You have already requested a room">
+            <div class="stat-icon primary"><i class="fas fa-door-open"></i></div>
+            <div class="stat-info"><p style="font-weight:600;color:var(--text-primary);">Request Room</p></div>
+          </div>
+        <% } else { %>
+          <a href="/request-room" class="stat-card" style="text-decoration:none;cursor:pointer;">
+            <div class="stat-icon primary"><i class="fas fa-door-open"></i></div>
+            <div class="stat-info"><p style="font-weight:600;color:var(--text-primary);">Request Room</p></div>
+          </a>
+        <% } %>
         <a href="/payment" class="stat-card" style="text-decoration:none;cursor:pointer;">
           <div class="stat-icon green"><i class="fas fa-credit-card"></i></div>
           <div class="stat-info"><p style="font-weight:600;color:var(--text-primary);">Make Payment</p></div>
@@ -156,10 +163,17 @@
           <div class="stat-icon orange"><i class="fas fa-flag"></i></div>
           <div class="stat-info"><p style="font-weight:600;color:var(--text-primary);">File Complaint</p></div>
         </a>
-        <a href="/chat" class="stat-card" style="text-decoration:none;cursor:pointer;">
-          <div class="stat-icon purple"><i class="fas fa-comments"></i></div>
-          <div class="stat-info"><p style="font-weight:600;color:var(--text-primary);">Roommate Chat</p></div>
-        </a>
+        <% if (user.roomStatus !== 'Allocated') { %>
+          <div class="stat-card" style="opacity:0.5;cursor:not-allowed;" title="You need an allocated room to access chat">
+            <div class="stat-icon purple"><i class="fas fa-comments"></i></div>
+            <div class="stat-info"><p style="font-weight:600;color:var(--text-primary);">Roommate Chat</p></div>
+          </div>
+        <% } else { %>
+          <a href="/chat" class="stat-card" style="text-decoration:none;cursor:pointer;">
+            <div class="stat-icon purple"><i class="fas fa-comments"></i></div>
+            <div class="stat-info"><p style="font-weight:600;color:var(--text-primary);">Roommate Chat</p></div>
+          </a>
+        <% } %>
       </div>
 
     </div>

@@ -1,0 +1,131 @@
+<%- include('../partials/header') %>
+<div class="app-layout">
+  <%- include('../partials/adminSidebar') %>
+  <div class="main-content">
+    <%- include('../partials/topbar') %>
+    <div class="page-content">
+
+      <% if (success && success.length > 0) { %>
+        <% success.forEach(s => { %><div class="alert alert-success"><i class="fas fa-check-circle"></i> <%= typeof s === 'object' ? s.msg : s %></div><% }) %>
+      <% } %>
+      <% if (errors && errors.length > 0) { %>
+        <% errors.forEach(e => { %><div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <%= e %></div><% }) %>
+      <% } %>
+
+      <div class="section-header" style="margin-bottom: 2rem;">
+        <h2><i class="fas fa-magic"></i> Smart Allocation Report</h2>
+        <p class="text-muted">Algorithm Execution Summary</p>
+      </div>
+
+      <!-- Overview Stats -->
+      <div class="stats-grid mb-3" style="margin-bottom: 2rem;">
+        <div class="stat-card">
+          <div class="stat-icon green"><i class="fas fa-user-check"></i></div>
+          <div class="stat-info">
+            <h3><%= allocatedList.length %></h3>
+            <p>Successfully Allocated</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon orange"><i class="fas fa-clock"></i></div>
+          <div class="stat-info">
+            <h3><%= remainingUsers.length %></h3>
+            <p>Remaining in Waiting Pool</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon primary"><i class="fas fa-users"></i></div>
+          <div class="stat-info">
+            <h3><%= totalWaitCount %></h3>
+            <p>Total Processed</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Allocated Users -->
+      <div class="glass-card" style="margin-bottom: 2rem;">
+        <div class="card-header" style="border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 10px; margin-bottom: 10px;">
+          <h4><i class="fas fa-check-circle" style="color:var(--success);"></i> Successfully Allocated</h4>
+        </div>
+        <div style="overflow-x: auto;">
+          <table class="table" style="width:100%; text-align:left; border-collapse: collapse;">
+            <thead>
+              <tr style="border-bottom: 2px solid rgba(0,0,0,0.1);">
+                <th style="padding:12px 10px;">Name</th>
+                <th style="padding:12px 10px;">Email</th>
+                <th style="padding:12px 10px;">Assigned Room</th>
+                <th style="padding:12px 10px;">Floor</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if(allocatedList.length > 0) { %>
+                <% allocatedList.forEach(item => { %>
+                  <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
+                    <td style="padding:12px 10px;"><strong><%= item.user.name %></strong></td>
+                    <td style="padding:12px 10px; color: var(--text-muted);"><%= item.user.email %></td>
+                    <td style="padding:12px 10px;"><span class="badge badge-success">Room <%= item.room.roomNumber %></span></td>
+                    <td style="padding:12px 10px;">Floor <%= item.room.floor %></td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr>
+                  <td colspan="4" style="padding:30px; text-align:center; color: var(--text-muted);">
+                    <i class="fas fa-times-circle" style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block;"></i>
+                    No students were allocated. There may be no available capacity or no compatible pairs.
+                  </td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Remaining Users -->
+      <div class="glass-card" style="margin-bottom: 2rem;">
+        <div class="card-header" style="border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 10px; margin-bottom: 10px;">
+          <h4><i class="fas fa-exclamation-circle" style="color:var(--warning);"></i> Remaining Waitlisted</h4>
+          <p style="font-size:0.85rem; color:var(--text-muted); margin-top:5px;">Users lacking adequate capacity or compatible exact/partial matches.</p>
+        </div>
+        <div style="overflow-x: auto;">
+          <table class="table" style="width:100%; text-align:left; border-collapse: collapse;">
+            <thead>
+              <tr style="border-bottom: 2px solid rgba(0,0,0,0.1);">
+                <th style="padding:12px 10px;">Name</th>
+                <th style="padding:12px 10px;">Email</th>
+                <th style="padding:12px 10px;">Preferences</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if(remainingUsers.length > 0) { %>
+                <% remainingUsers.forEach(user => { %>
+                  <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
+                    <td style="padding:12px 10px;"><strong><%= user.name %></strong></td>
+                    <td style="padding:12px 10px; color:var(--text-muted);"><%= user.email %></td>
+                    <td style="padding:12px 10px; display:flex; gap:5px;">
+                      <span class="badge badge-info"><%= user.preferences.sleepSchedule %></span>
+                      <span class="badge badge-success"><%= user.preferences.food %></span>
+                      <span class="badge badge-warning"><%= user.preferences.lifestyle %></span>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr>
+                  <td colspan="3" style="padding:30px; text-align:center; color: var(--text-muted);">
+                    <i class="fas fa-check-circle" style="color: var(--success); font-size: 1.5rem; margin-bottom: 0.5rem; display: block;"></i>
+                    All waiting users successfully mapped!
+                  </td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <div style="text-align: center; margin-top:2rem;">
+        <a href="/admin/dashboard" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Return to Dashboard</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>

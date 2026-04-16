@@ -47,27 +47,40 @@
                     <span class="chat-name"><%= msg.sender.name %></span>
                   <% } %>
                   <div class="chat-bubble"><%= msg.message %></div>
-                  <span class="chat-time"><%= new Date(msg.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) %></span>
+                  <span class="chat-time" data-timestamp="<%= msg.timestamp.toISOString() %>"></span>
                 </div>
               </div>
             <% }) %>
           <% } %>
         </div>
 
-        <form class="chat-input-area" onsubmit="sendChatMessage(event)">
-          <input type="text" id="chatInput" placeholder="Type a message..." autocomplete="off" required />
-          <button type="submit" class="btn btn-primary">
-            <i class="fas fa-paper-plane"></i>
-          </button>
-        </form>
+        <div style="position:relative;">
+          <!-- Emoji Picker Panel -->
+          <div id="emojiPicker" class="hidden" style="position:absolute; bottom:70px; left:20px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:10px; display:grid; grid-template-columns:repeat(5, 1fr); gap:8px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1); z-index:100; transition:all 0.2s ease;">
+            <% const emojis = ['😀','😂','😍','😎','😢','😡','👍','👎','🙏','🔥','🎉','✨','🤔','👀','❤️']; %>
+            <% emojis.forEach(e => { %>
+              <span style="font-size:1.5rem; cursor:pointer; text-align:center; user-select:none;" class="emoji-hover" onclick="insertEmoji('<%= e %>')"><%= e %></span>
+            <% }) %>
+          </div>
+          
+          <form class="chat-input-area" onsubmit="sendChatMessage(event)" style="display:flex; align-items:center; gap:0.75rem; position:relative; z-index:10;">
+            <button type="button" id="emojiBtn" class="btn btn-secondary" onclick="toggleEmojiPicker()" title="Insert Emoji" style="padding:0.75rem; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+              <i class="far fa-smile" style="font-size:1.2rem; color:var(--text-muted)"></i>
+            </button>
+            <input type="text" id="chatInput" placeholder="Type your message..." autocomplete="off" required style="flex:1;" />
+            <button type="submit" class="btn btn-primary" style="padding:0.75rem 1.25rem; border-radius:24px; display:flex; align-items:center; gap:0.5rem;">
+              <span>Send</span> <i class="fas fa-paper-plane"></i>
+            </button>
+          </form>
+        </div>
       </div>
 
       <script>
-        // Initialize chat polling
-        var lastTimestamp = '<%= messages.length > 0 ? messages[messages.length - 1].timestamp : new Date(0).toISOString() %>';
-        var currentUserId = '<%= user._id %>';
+        // Initialize chat polling safely without colliding with global variables
         document.addEventListener('DOMContentLoaded', function() {
-          initChat(currentUserId);
+          var initialTs = '<%= messages.length > 0 ? messages[messages.length - 1].timestamp.toISOString() : new Date(0).toISOString() %>';
+          var uId = '<%= user._id %>';
+          initChat(uId, initialTs);
         });
       </script>
 

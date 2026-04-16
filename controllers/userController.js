@@ -146,58 +146,23 @@ exports.postRoomRequest = async (req, res) => {
   try {
     const user = await User.findById(req.session.userId);
 
-    if (user.roomStatus !== 'Not Requested') {
+    if (user.roomStatus === 'Waiting' || user.roomStatus === 'Allocated') {
       req.flash('error', 'You have already requested or been allocated a room.');
       return res.redirect('/request-room');
     }
 
-    const bestRoom = await findBestRoom(user);
+    // Add to waiting pool
+    user.roomStatus = 'Waiting';
+    user.roomId = null;
+    await user.save();
 
-    if (bestRoom) {
-      // Allocate room
-      bestRoom.occupants.push(user._id);
-      if (bestRoom.occupants.length >= bestRoom.capacity) {
-        bestRoom.status = 'Full';
-      }
-      await bestRoom.save();
+    await Notification.create({
+      title: 'Room Request Received',
+      message: 'You have been added to the waiting list. Allocation will be done soon.',
+      type: 'system',
+    });
 
-      user.roomId = bestRoom._id;
-      user.roomStatus = 'Allocated';
-      await user.save();
-
-      // Generate fee
-      const dueDate = new Date();
-      dueDate.setDate(dueDate.getDate() + 30);
-
-      await Fee.create({
-        userId: user._id,
-        roomId: bestRoom._id,
-        amount: bestRoom.monthlyFee,
-        dueDate,
-      });
-
-      // System notification
-      await Notification.create({
-        title: 'Room Allocated',
-        message: `You have been allocated Room ${bestRoom.roomNumber} on Floor ${bestRoom.floor}.`,
-        type: 'system',
-      });
-
-      req.flash('success', `Room ${bestRoom.roomNumber} has been allocated to you!`);
-    } else {
-      // Add to waiting list
-      user.roomStatus = 'Waiting';
-      await user.save();
-
-      await Notification.create({
-        title: 'Waiting List',
-        message: 'No rooms are currently available. You have been added to the waiting list.',
-        type: 'alert',
-      });
-
-      req.flash('error', 'No rooms available currently. You have been added to the waiting list.');
-    }
-
+    req.flash('success', 'You are in waiting list. Allocation will be done soon.');
     res.redirect('/dashboard');
   } catch (err) {
     console.error(err);
