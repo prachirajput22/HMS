@@ -13,6 +13,7 @@ const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const { injectUserNotifications } = require('./middleware/notificationMiddleware');
 
 const app = express();
 
@@ -53,6 +54,9 @@ app.use((req, res, next) => {
   res.locals.session = req.session;
   next();
 });
+
+// Inject user notifications into every response (powers the bell icon)
+app.use(injectUserNotifications);
 
 // Landing page
 app.get('/', (req, res) => {

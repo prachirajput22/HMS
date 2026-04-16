@@ -22,10 +22,24 @@ exports.getDashboard = async (req, res) => {
       await fee.save();
     }
 
-    const notifications = await Notification.find().sort({ createdAt: -1 }).limit(5);
-    const unreadCount = notifications.filter(
-      (n) => !n.readBy.map((id) => id.toString()).includes(req.session.userId.toString())
-    ).length;
+    // Merge personal + broadcast notifications (now handled by middleware via res.locals)
+    // Payment reminder check (3 days before due date, once)
+    if (fee && fee.dueDate) {
+      const daysLeft = Math.ceil((new Date(fee.dueDate) - new Date()) / (1000 * 60 * 60 * 24));
+      if (daysLeft <= 3 && daysLeft > 0) {
+        const alreadySent = await Notification.findOne({
+          userId: user._id, type: 'payment_reminder'
+        });
+        if (!alreadySent) {
+          await Notification.create({
+            userId: user._id,
+            title: 'Payment Reminder',
+            message: `Your hostel fee payment of ₹${fee.amount + fee.lateFee} is due in ${daysLeft} day(s). Please pay on time to avoid late fees.`,
+            type: 'payment_reminder'
+          });
+        }
+      }
+    }
 
     // Get roommates for compatibility display
     let roommates = [];
@@ -46,8 +60,6 @@ exports.getDashboard = async (req, res) => {
       user,
       fee,
       roomChangeRequest,
-      notifications,
-      unreadCount,
       roommates,
       errors: req.flash('error'),
       success: req.flash('success'),
@@ -160,8 +172,9 @@ exports.postRoomRequest = async (req, res) => {
     await user.save();
 
     await Notification.create({
+      userId: user._id,
       title: 'Room Request Received',
-      message: 'You have been added to the waiting list. Allocation will be done soon.',
+      message: 'You have been added to the waiting list. Our Smart Allocation engine will assign you a room shortly.',
       type: 'system',
     });
 
@@ -215,6 +228,17 @@ exports.postPayment = async (req, res) => {
     fee.status = 'Paid';
     fee.paidAt = new Date();
     await fee.save();
+
+    // Auto-notification on payment success
+    await Notification.create({
+      userId: fee.userId,
+      title: 'Payment Successful ✅',
+      message: `Your hostel fee payment of ₹${fee.amount} has been received successfully. Receipt ID: ${fee.receiptId}`,
+      type: 'payment'
+    });
+
+    // Remove any pending reminder
+    await Notification.deleteMany({ userId: fee.userId, type: 'payment_reminder' });
 
     req.flash('success', `Payment successful! Receipt ID: ${fee.receiptId}`);
     res.redirect('/payment');

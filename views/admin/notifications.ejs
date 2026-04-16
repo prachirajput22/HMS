@@ -14,7 +14,9 @@
 
       <!-- Send Notification -->
       <div class="glass-card mb-3">
-        <h3 style="margin-bottom:1rem;"><i class="fas fa-bullhorn" style="color:var(--primary)"></i> Send Notification</h3>
+        <h3 style="margin-bottom:1.2rem;display:flex;align-items:center;gap:8px;">
+          <i class="fas fa-bullhorn" style="color:var(--primary)"></i> Send Notification
+        </h3>
         <form action="/admin/notifications" method="POST">
           <div class="form-row">
             <div class="form-group">
@@ -32,36 +34,67 @@
             </div>
           </div>
           <div class="form-group">
+            <label for="targetUserId">Send To</label>
+            <select id="targetUserId" name="targetUserId" class="form-control">
+              <option value="all">📣 All Users (Broadcast)</option>
+              <% users.forEach(u => { %>
+                <option value="<%= u._id %>"><%= u.name %> — <%= u.email %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div class="form-group">
             <label for="notifMessage">Message</label>
-            <textarea id="notifMessage" name="message" class="form-control" placeholder="Write your notification..." required></textarea>
+            <textarea id="notifMessage" name="message" class="form-control" rows="3" placeholder="Write your notification message..." required></textarea>
           </div>
           <button type="submit" class="btn btn-primary">
-            <i class="fas fa-paper-plane"></i> Send to All Users
+            <i class="fas fa-paper-plane"></i> Send Notification
           </button>
         </form>
       </div>
 
-      <!-- History -->
-      <div class="section-header">
-        <h3><i class="fas fa-history"></i> Notification History</h3>
+      <!-- Filter Tabs -->
+      <div class="section-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:1rem;">
+        <h3 style="margin:0;"><i class="fas fa-history"></i> Notification History</h3>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-sm" id="filterAll" onclick="filterNotifs('all')" style="background:var(--primary);color:#fff;">All</button>
+          <button class="btn btn-sm" id="filterBroadcast" onclick="filterNotifs('broadcast')">Broadcast</button>
+          <button class="btn btn-sm" id="filterPersonal" onclick="filterNotifs('personal')">Personal</button>
+        </div>
       </div>
+
       <% if (notifications.length === 0) { %>
-        <div class="empty-state"><i class="fas fa-bell-slash"></i><h4>No Notifications</h4></div>
+        <div class="empty-state glass-card">
+          <i class="fas fa-bell-slash"></i>
+          <h4>No Notifications Sent Yet</h4>
+          <p>Use the form above to send your first notification.</p>
+        </div>
       <% } else { %>
-        <div class="notif-list">
+        <div class="notif-list" id="notifList">
           <% notifications.forEach(n => { %>
-            <div class="notif-card">
-              <div class="notif-content">
-                <h4><%= n.title %></h4>
-                <p><%= n.message %></p>
-                <div class="notif-meta">
-                  <span class="badge badge-<%= n.type === 'alert' ? 'warning' : (n.type === 'event' ? 'success' : 'info') %>"><%= n.type %></span>
-                  &nbsp; <%= new Date(n.createdAt).toLocaleDateString('en-IN') %> at <%= new Date(n.createdAt).toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'}) %>
+            <div class="notif-card glass-card" data-target="<%= n.userId ? 'personal' : 'broadcast' %>" style="margin-bottom:0.8rem;">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+                <div style="flex:1;">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                    <% const iconMap = { announcement:'📢', event:'🎉', alert:'⚠️', system:'🔧', payment:'💰', payment_reminder:'⏰' }; %>
+                    <span style="font-size:1.1rem;"><%= iconMap[n.type] || '🔔' %></span>
+                    <strong><%= n.title %></strong>
+                    <span class="badge badge-<%= n.userId ? 'warning' : 'info' %>" style="font-size:0.72rem;">
+                      <%= n.userId ? 'Personal → ' + (n.userId.name || 'User') : 'Broadcast' %>
+                    </span>
+                  </div>
+                  <p style="margin:0 0 6px;color:var(--text-secondary);font-size:0.9rem;"><%= n.message %></p>
+                  <span style="font-size:0.78rem;color:var(--text-muted);">
+                    <i class="fas fa-clock"></i>
+                    <%= new Date(n.createdAt).toLocaleDateString('en-IN') %> at
+                    <%= new Date(n.createdAt).toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'}) %>
+                  </span>
                 </div>
+                <form action="/admin/notifications/<%= n._id %>/delete" method="POST" onsubmit="return confirm('Delete this notification?')" style="flex-shrink:0;">
+                  <button type="submit" class="btn btn-sm" style="background:var(--danger);color:#fff;" title="Delete">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </form>
               </div>
-              <form action="/admin/notifications/<%= n._id %>/delete" method="POST" onsubmit="return confirm('Delete this notification?')">
-                <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
-              </form>
             </div>
           <% }) %>
         </div>
@@ -70,4 +103,20 @@
     </div>
   </div>
 </div>
+
+<script>
+function filterNotifs(type) {
+  document.querySelectorAll('#notifList .notif-card').forEach(card => {
+    if (type === 'all' || card.dataset.target === type) {
+      card.style.display = '';
+    } else {
+      card.style.display = 'none';
+    }
+  });
+  document.querySelectorAll('[id^="filter"]').forEach(btn => btn.style.background = '');
+  document.getElementById('filter' + type.charAt(0).toUpperCase() + type.slice(1)).style.background = 'var(--primary)';
+  document.getElementById('filter' + type.charAt(0).toUpperCase() + type.slice(1)).style.color = '#fff';
+}
+</script>
+
 <%- include('../partials/footer') %>

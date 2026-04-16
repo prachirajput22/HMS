@@ -41,8 +41,12 @@ router.get('/chat/messages', isUser, chatController.getMessages);
 router.get('/feedback', isUser, feedbackController.getFeedback);
 router.post('/feedback', isUser, feedbackController.postFeedback);
 
-// Notification read
-router.post('/notification/:notifId/read', isUser, userController.markNotificationRead);
+// Notifications
+const notificationController = require('../controllers/notificationController');
+router.get('/notifications', isUser, notificationController.getUserNotifications);
+router.post('/notifications/read/:id', isUser, notificationController.markAsRead);
+router.post('/notifications/read-all', isUser, notificationController.markAllAsRead);
+router.get('/api/notifications/poll', isUser, notificationController.pollUnreadCount);
 
 // Room Change
 router.post('/room-change/request', isUser, roomChangeController.requestRoomChange);

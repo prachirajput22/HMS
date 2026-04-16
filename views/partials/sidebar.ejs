@@ -44,6 +44,14 @@
       </a>
     </li>
     <li>
+      <a href="/notifications" class="<%= (typeof title !== 'undefined' && title === 'My Notifications') ? 'active' : '' %>">
+        <i class="fas fa-bell"></i> Notifications
+        <% if (typeof unreadCount !== 'undefined' && unreadCount > 0) { %>
+          <span class="notif-badge" style="position:static;margin-left:4px;font-size:0.7rem;padding:1px 6px;"><%= unreadCount %></span>
+        <% } %>
+      </a>
+    </li>
+    <li>
       <a href="/logout" class="logout-link">
         <i class="fas fa-sign-out-alt"></i> Logout
       </a>

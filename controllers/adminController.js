@@ -279,10 +279,18 @@ exports.manualAllocate = async (req, res) => {
     dueDate.setDate(dueDate.getDate() + 30);
     await Fee.create({ userId: user._id, roomId: room._id, amount: room.monthlyFee, dueDate });
 
+    // Targeted personal notifications
     await Notification.create({
-      title: 'Room Allocated by Admin',
-      message: `You have been manually allocated Room ${room.roomNumber}.`,
+      userId: user._id,
+      title: '🏠 Room Allocated',
+      message: `You have been allocated Room ${room.roomNumber} (Floor ${room.floor}). Your monthly fee is ₹${room.monthlyFee}.`,
       type: 'system',
+    });
+    await Notification.create({
+      userId: user._id,
+      title: '💰 Fee Generated',
+      message: `Your hostel fee of ₹${room.monthlyFee} has been generated with due date ${dueDate.toLocaleDateString('en-IN')}.`,
+      type: 'payment',
     });
 
     req.flash('success', `${user.name} allocated to Room ${room.roomNumber}.`);
@@ -357,6 +365,19 @@ exports.autoAllocate = async (req, res) => {
         const dueDate = new Date();
         dueDate.setDate(dueDate.getDate() + 30);
         await Fee.create({ userId: user._id, roomId: bestRoom._id, amount: bestRoom.monthlyFee, dueDate });
+
+        await Notification.create({
+          userId: user._id,
+          title: '🏠 Room Allocated',
+          message: `Great news! You have been allocated Room ${bestRoom.roomNumber} (Floor ${bestRoom.floor}).`,
+          type: 'system',
+        });
+        await Notification.create({
+          userId: user._id,
+          title: '💰 Fee Generated',
+          message: `Your hostel fee of ₹${bestRoom.monthlyFee} is due by ${dueDate.toLocaleDateString('en-IN')}.`,
+          type: 'payment',
+        });
         allocated++;
       }
     }
@@ -461,6 +482,20 @@ exports.executeSmartAllocation = async () => {
     const dueDate = new Date();
     dueDate.setDate(dueDate.getDate() + 30);
     await Fee.create({ userId: u._id, roomId: record.room._id, amount: record.room.monthlyFee, dueDate });
+
+    // Targeted notification per student
+    await Notification.create({
+      userId: u._id,
+      title: '🏠 Room Allocated',
+      message: `You have been successfully allocated Room ${record.room.roomNumber} (Floor ${record.room.floor}) via Smart Allocation.`,
+      type: 'system',
+    });
+    await Notification.create({
+      userId: u._id,
+      title: '💰 Fee Generated',
+      message: `Your hostel fee of ₹${record.room.monthlyFee} is due by ${dueDate.toLocaleDateString('en-IN')}. Pay on time to avoid late fees.`,
+      type: 'payment',
+    });
   }
 
   console.log(`[Algorithm Summary] Total Allocated: ${allocatedList.length} | Remainder Waitlisted: ${waitingUsers.length}`);

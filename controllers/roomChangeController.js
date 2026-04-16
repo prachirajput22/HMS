@@ -34,7 +34,7 @@ exports.requestRoomChange = async (req, res) => {
     });
 
     await Notification.create({
-      targetUserId: user._id,
+      userId: user._id,
       title: 'Room Change Request Submitted',
       message: 'Your room change request has been seamlessly submitted to administration. We will review it shortly.',
       type: 'system'
@@ -103,7 +103,7 @@ exports.approveRoomChange = async (req, res) => {
     await request.save();
 
     await Notification.create({
-      targetUserId: user._id,
+      userId: user._id,
       title: 'Room Change Approved',
       message: 'Your room change request has been approved. You are moved to the waiting list! Our Smart Allocation will match you momentarily.',
       type: 'alert'
@@ -134,7 +134,7 @@ exports.rejectRoomChange = async (req, res) => {
     await request.save();
 
     await Notification.create({
-      targetUserId: request.userId,
+      userId: request.userId,
       title: 'Room Change Rejected',
       message: 'Your room change request was reviewed but fundamentally declined due to capacity routing constraints or internal policies.',
       type: 'system'

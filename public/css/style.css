@@ -654,7 +654,12 @@ h3 { font-size: 1.25rem; }
   z-index: 200;
 }
 
-.notif-dropdown.open { display: block; }
+.notif-dropdown.open, .notif-dropdown.show { display: block; }
+
+@keyframes bounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+}
 
 .notif-dropdown-header {
   padding: 14px 16px;

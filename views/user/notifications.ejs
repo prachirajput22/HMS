@@ -1,0 +1,129 @@
+<%- include('../partials/header') %>
+<div class="app-layout">
+  <%- include('../partials/sidebar') %>
+  <div class="main-content">
+    <%- include('../partials/topbar') %>
+    <div class="page-content">
+
+      <div class="glass-card mb-3" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <h3 style="margin:0;display:flex;align-items:center;gap:8px;">
+          <i class="fas fa-bell" style="color:var(--primary)"></i> My Notifications
+          <% const totalUnread = notifications.filter(n => n.userId ? !n.isRead : !(n.readBy || []).map(id=>id.toString()).includes(user._id.toString())).length; %>
+          <% if (totalUnread > 0) { %>
+            <span class="notif-badge" style="position:static;font-size:0.8rem;padding:2px 8px;"><%= totalUnread %></span>
+          <% } %>
+        </h3>
+        <% if (notifications.length > 0) { %>
+          <button class="btn btn-secondary" id="markAllBtn" onclick="markAllRead()" style="font-size:0.85rem;">
+            <i class="fas fa-check-double"></i> Mark All as Read
+          </button>
+        <% } %>
+      </div>
+
+      <% if (notifications.length === 0) { %>
+        <div class="empty-state glass-card">
+          <i class="fas fa-bell-slash" style="font-size:3rem;color:var(--text-muted);margin-bottom:1rem;"></i>
+          <h4>No Notifications</h4>
+          <p>You're all caught up! New notifications will appear here.</p>
+        </div>
+      <% } else { %>
+        <div id="notifList">
+          <% notifications.forEach(n => {
+            const isRead = n.userId ? n.isRead : (n.readBy || []).map(id => id.toString()).includes(user._id.toString());
+            const iconMap = { announcement:'📢', event:'🎉', alert:'⚠️', system:'🔧', payment:'💰', payment_reminder:'⏰', room:'🏠' };
+            const icon = iconMap[n.type] || '🔔';
+          %>
+            <div class="notif-page-card glass-card <%= isRead ? 'notif-read' : 'notif-unread' %>"
+                 id="notif-<%= n._id %>"
+                 onclick="markRead('<%= n._id %>', this)"
+                 style="margin-bottom:0.75rem;cursor:pointer;border-left:4px solid <%= isRead ? 'transparent' : 'var(--primary)' %>;">
+              <div style="display:flex;align-items:flex-start;gap:14px;">
+                <div style="font-size:1.6rem;flex-shrink:0;padding-top:2px;"><%= icon %></div>
+                <div style="flex:1;">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                    <strong style="<%= isRead ? '' : 'color:var(--primary);' %>"><%= n.title %></strong>
+                    <% if (!isRead) { %>
+                      <span style="width:8px;height:8px;background:var(--primary);border-radius:50%;display:inline-block;flex-shrink:0;"></span>
+                    <% } %>
+                  </div>
+                  <p style="margin:0 0 8px;color:var(--text-secondary);font-size:0.92rem;line-height:1.5;"><%= n.message %></p>
+                  <span style="font-size:0.78rem;color:var(--text-muted);">
+                    <i class="fas fa-clock"></i>
+                    <% 
+                      const diff = Math.round((new Date() - new Date(n.createdAt)) / 60000);
+                      let timeAgo;
+                      if (diff < 1) timeAgo = 'Just now';
+                      else if (diff < 60) timeAgo = diff + ' min' + (diff > 1 ? 's' : '') + ' ago';
+                      else if (diff < 1440) timeAgo = Math.round(diff/60) + ' hr' + (Math.round(diff/60) > 1 ? 's' : '') + ' ago';
+                      else timeAgo = Math.round(diff/1440) + ' day' + (Math.round(diff/1440) > 1 ? 's' : '') + ' ago';
+                    %>
+                    <%= timeAgo %>
+                    &nbsp;·&nbsp;
+                    <%= new Date(n.createdAt).toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'}) %>
+                  </span>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      <% } %>
+
+    </div>
+  </div>
+</div>
+
+<style>
+.notif-page-card { transition: border-color 0.3s, opacity 0.3s; }
+.notif-page-card:hover { opacity: 0.92; }
+.notif-read { opacity: 0.65; }
+.notif-unread { opacity: 1; }
+</style>
+
+<script>
+async function markRead(id, el) {
+  try {
+    const res = await fetch('/notifications/read/' + id, { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      el.classList.remove('notif-unread');
+      el.classList.add('notif-read');
+      el.style.borderLeftColor = 'transparent';
+      el.style.opacity = '0.65';
+      el.querySelector('strong').style.color = '';
+      const dot = el.querySelector('[style*="radius:50%"]');
+      if (dot) dot.remove();
+      updateBellCount();
+    }
+  } catch(e) {}
+}
+
+async function markAllRead() {
+  try {
+    await fetch('/notifications/read-all', { method: 'POST' });
+    document.querySelectorAll('.notif-page-card').forEach(el => {
+      el.classList.remove('notif-unread');
+      el.classList.add('notif-read');
+      el.style.borderLeftColor = 'transparent';
+      el.style.opacity = '0.65';
+    });
+    const badge = document.querySelector('.notif-badge');
+    if (badge) badge.remove();
+    document.getElementById('markAllBtn').innerHTML = '<i class="fas fa-check-double"></i> All Read';
+    updateBellCount();
+  } catch(e) {}
+}
+
+async function updateBellCount() {
+  try {
+    const res = await fetch('/api/notifications/poll');
+    const data = await res.json();
+    const badge = document.querySelector('.topbar .notif-badge');
+    if (badge) {
+      badge.textContent = data.unreadCount > 0 ? data.unreadCount : '';
+      badge.style.display = data.unreadCount > 0 ? '' : 'none';
+    }
+  } catch(e) {}
+}
+</script>
+
+<%- include('../partials/footer') %>

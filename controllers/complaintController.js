@@ -170,6 +170,7 @@ exports.handleRoomChange = async (req, res) => {
       complaint.status = 'Resolved';
 
       await require('../models/Notification').create({
+        userId: user._id,
         title: 'Room Change Approved',
         message: 'Your room change request has been approved. Please request a new room.',
         type: 'system',
@@ -177,6 +178,7 @@ exports.handleRoomChange = async (req, res) => {
     } else {
       complaint.roomChangeStatus = 'Rejected';
       await require('../models/Notification').create({
+        userId: complaint.userId,
         title: 'Room Change Rejected',
         message: 'Your room change request has been reviewed and rejected.',
         type: 'alert',

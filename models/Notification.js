@@ -4,12 +4,12 @@
 const mongoose = require('mongoose');
 
 const notificationSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null }, // null = broadcast
   title: { type: String, required: true },
   message: { type: String, required: true },
-  // 'event' | 'announcement' | 'alert' | 'system'
   type: { type: String, default: 'announcement' },
-  // Users who have read this notification
-  readBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  isRead: { type: Boolean, default: false }, // for targeted users
+  readBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // for broadcasts
   createdAt: { type: Date, default: Date.now },
 });
 
