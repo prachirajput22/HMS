@@ -5,6 +5,7 @@ const User = require('../models/User');
 const Room = require('../models/Room');
 const Fee = require('../models/Fee');
 const Notification = require('../models/Notification');
+const RoomChange = require('../models/RoomChange');
 const { findBestRoom, compatibilityPercentage } = require('../utils/smartMatch');
 
 // ===================== DASHBOARD =====================
@@ -12,6 +13,7 @@ const { findBestRoom, compatibilityPercentage } = require('../utils/smartMatch')
 exports.getDashboard = async (req, res) => {
   try {
     const user = await User.findById(req.session.userId).populate('roomId');
+    const roomChangeRequest = await RoomChange.findOne({ userId: user._id }).sort({ createdAt: -1 });
     const fee = await Fee.findOne({ userId: user._id, status: 'Pending' }).sort({ createdAt: -1 });
 
     // Auto apply late fee
@@ -43,6 +45,7 @@ exports.getDashboard = async (req, res) => {
       title: 'My Dashboard',
       user,
       fee,
+      roomChangeRequest,
       notifications,
       unreadCount,
       roommates,

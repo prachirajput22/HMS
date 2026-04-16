@@ -10,6 +10,7 @@ const userController = require('../controllers/userController');
 const complaintController = require('../controllers/complaintController');
 const chatController = require('../controllers/chatController');
 const feedbackController = require('../controllers/feedbackController');
+const roomChangeController = require('../controllers/roomChangeController');
 
 // Dashboard
 router.get('/dashboard', isUser, userController.getDashboard);
@@ -42,5 +43,8 @@ router.post('/feedback', isUser, feedbackController.postFeedback);
 
 // Notification read
 router.post('/notification/:notifId/read', isUser, userController.markNotificationRead);
+
+// Room Change
+router.post('/room-change/request', isUser, roomChangeController.requestRoomChange);
 
 module.exports = router;

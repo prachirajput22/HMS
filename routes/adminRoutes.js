@@ -12,6 +12,7 @@ const complaintController = require('../controllers/complaintController');
 const attendanceController = require('../controllers/attendanceController');
 const notificationController = require('../controllers/notificationController');
 const feedbackController = require('../controllers/feedbackController');
+const roomChangeController = require('../controllers/roomChangeController');
 
 // Admin Root Redirect
 router.get('/', (req, res) => res.redirect('/admin/login'));
@@ -62,6 +63,11 @@ router.post('/notifications/:id/delete', isAdmin, notificationController.deleteN
 // Feedback
 router.get('/feedback', isAdmin, feedbackController.adminGetFeedback);
 router.post('/feedback/:id/delete', isAdmin, feedbackController.deleteFeedback);
+
+// Room Change
+router.get('/room-change', isAdmin, roomChangeController.getRoomChangeRequests);
+router.post('/room-change/approve/:id', isAdmin, roomChangeController.approveRoomChange);
+router.post('/room-change/reject/:id', isAdmin, roomChangeController.rejectRoomChange);
 
 // Search
 router.get('/search', isAdmin, adminController.getSearch);

@@ -1,0 +1,121 @@
+<%- include('../partials/header') %>
+<div class="app-layout">
+  <%- include('../partials/adminSidebar') %>
+  <div class="main-content">
+    <%- include('../partials/topbar') %>
+    <div class="page-content">
+
+      <% if (success && success.length > 0) { %>
+        <% success.forEach(s => { %><div class="alert alert-success"><i class="fas fa-check-circle"></i> <%= s.msg || s %></div><% }) %>
+      <% } %>
+      <% if (errors && errors.length > 0) { %>
+        <% errors.forEach(e => { %><div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <%= e.msg || e %></div><% }) %>
+      <% } %>
+
+      <div class="glass-card mb-3">
+        <h3 style="margin-bottom:1rem;display:flex;align-items:center;gap:8px;">
+          <i class="fas fa-random" style="color:var(--primary)"></i> Pending Room Change Requests
+        </h3>
+      </div>
+
+      <% const pending = requests.filter(r => r.status === 'Pending'); %>
+      <% const history = requests.filter(r => r.status !== 'Pending'); %>
+
+      <div class="glass-card">
+        <% if (pending.length === 0) { %>
+          <div class="empty-state">
+            <i class="fas fa-random"></i>
+            <h4>No Active Requests</h4>
+            <p>There are no pending room change requests right now.</p>
+          </div>
+        <% } else { %>
+          <div class="table-container">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Student Info</th>
+                  <th>Current Room</th>
+                  <th>Reason</th>
+                  <th>Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% pending.forEach(req => { %>
+                  <tr>
+                    <td>
+                      <div style="display:flex;align-items:center;gap:10px;">
+                         <img src="<%= (req.userId && req.userId.profileImage) ? req.userId.profileImage : '/uploads/profiles/default.png' %>" style="width:36px;height:36px;border-radius:50%;object-fit:cover;" alt="">
+                         <div>
+                           <strong><%= req.userId ? req.userId.name : 'Unknown' %></strong>
+                           <div class="text-muted" style="font-size:0.8rem;"><%= req.userId ? req.userId.email : '' %></div>
+                         </div>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge badge-info">
+                        Room <%= req.currentRoomId ? req.currentRoomId.roomNumber : 'N/A' %>
+                      </span>
+                    </td>
+                    <td style="max-width:250px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="<%= req.reason %>">
+                      <%= req.reason %>
+                    </td>
+                    <td><%= new Date(req.createdAt).toLocaleDateString('en-IN') %></td>
+                    <td>
+                      <div style="display:flex; gap:6px;">
+                        <form action="/admin/room-change/approve/<%= req._id %>" method="POST" style="margin:0;">
+                          <button type="submit" class="btn btn-sm" style="background:var(--success);color:#fff;" title="Approve & Waitlist" onclick="return confirm('Approve this request? They will be unallocated and smart-allocated automatically.')">
+                            <i class="fas fa-check"></i>
+                          </button>
+                        </form>
+                        <form action="/admin/room-change/reject/<%= req._id %>" method="POST" style="margin:0;">
+                           <button type="submit" class="btn btn-sm" style="background:var(--danger);color:#fff;" title="Reject" onclick="return confirm('Reject this room change request?')">
+                             <i class="fas fa-times"></i>
+                           </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        <% } %>
+      </div>
+
+      <% if (history.length > 0) { %>
+        <div class="glass-card mt-3">
+          <h4 style="margin-bottom:1rem;"><i class="fas fa-history"></i> Request History</h4>
+          <div class="table-container">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Reason</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% history.forEach(req => { %>
+                  <tr>
+                    <td><%= req.userId ? req.userId.name : 'Unknown' %></td>
+                    <td style="max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><%= req.reason %></td>
+                    <td>
+                       <span class="badge badge-<%= req.status === 'Approved' ? 'success' : 'danger' %>">
+                         <%= req.status %>
+                       </span>
+                    </td>
+                    <td><%= new Date(req.createdAt).toLocaleDateString('en-IN') %></td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      <% } %>
+
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>

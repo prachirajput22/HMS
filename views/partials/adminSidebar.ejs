@@ -29,8 +29,13 @@
       </a>
     </li>
     <li>
-      <a href="/admin/payments" class="<%= (typeof title !== 'undefined' && title === 'Payment Management') ? 'active' : '' %>">
-        <i class="fas fa-rupee-sign"></i> Payments
+      <a href="/admin/payments" class="<%= (typeof title !== 'undefined' && title === 'Fee Management') ? 'active' : '' %>">
+        <i class="fas fa-file-invoice-dollar"></i> Payments
+      </a>
+    </li>
+    <li>
+      <a href="/admin/room-change" class="<%= (typeof title !== 'undefined' && title === 'Room Change Requests') ? 'active' : '' %>">
+        <i class="fas fa-random"></i> Room Changes
       </a>
     </li>
     <li>
