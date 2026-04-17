@@ -53,7 +53,7 @@
         <div class="stat-card">
           <div class="stat-icon blue"><i class="fas fa-door-open"></i></div>
           <div class="stat-info">
-            <h3><%= user.roomStatus %></h3>
+            <h3 title="<%= user.roomStatus %>" style="<%= user.roomStatus === 'Not Requested' ? 'font-size: 1.15rem;' : '' %>"><%= user.roomStatus %></h3>
             <p>Room Status</p>
           </div>
         </div>
