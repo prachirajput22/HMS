@@ -2,6 +2,7 @@
 // Room Change Controller — Process User reallocation requests
 // ============================================================
 const RoomChange = require('../models/RoomChange');
+const Complaint = require('../models/Complaint');
 const User = require('../models/User');
 const Room = require('../models/Room');
 const Notification = require('../models/Notification');
@@ -24,23 +25,57 @@ exports.requestRoomChange = async (req, res) => {
       return res.redirect('/dashboard');
     }
 
-    const { requestRoomChange, reason } = req.body;
-    let actualReason = reason || 'Issue with room layout & dynamics';
+    const existingComplaintRequest = await Complaint.findOne({
+      userId: user._id,
+      category: 'Roommate Complaint',
+      isRoomChangeRequested: true,
+      roomChangeStatus: 'Pending'
+    });
+    if (existingComplaintRequest) {
+      req.flash('error', 'You already have a pending roommate complaint for room change.');
+      return res.redirect('/dashboard');
+    }
+
+    const actualReason = (req.body.reason || '').trim();
+    if (!actualReason) {
+      req.flash('error', 'Please describe the roommate complaint before requesting a room change.');
+      return res.redirect('/dashboard');
+    }
+
+    const complaintData = {
+      userId: user._id,
+      category: 'Roommate Complaint',
+      type: 'private',
+      description: actualReason,
+      isRoomChangeRequested: true,
+      roomChangeStatus: 'Pending'
+    };
+
+    if (user.roomId) {
+      const currentRoom = await Room.findById(user.roomId);
+      if (currentRoom) {
+        complaintData.roomNumber = currentRoom.roomNumber;
+        complaintData.floor = currentRoom.floor;
+      }
+    }
+
+    const complaint = await Complaint.create(complaintData);
 
     await RoomChange.create({
       userId: user._id,
       currentRoomId: user.roomId,
+      complaintId: complaint._id,
       reason: actualReason
     });
 
     await Notification.create({
       userId: user._id,
       title: 'Room Change Request Submitted',
-      message: 'Your room change request has been seamlessly submitted to administration. We will review it shortly.',
+      message: 'Your roommate complaint and room change request have been submitted to the administration for review.',
       type: 'system'
     });
 
-    req.flash('success', 'Room change request safely submitted to the admin waitlist.');
+    req.flash('success', 'Your roommate complaint and room change request have been submitted successfully.');
     // Check where they posted from. If from dashboard, go dashboard. If from complaint, go complaint.
     const referer = req.headers.referer || '/dashboard';
     res.redirect(referer.includes('complaint') ? '/complaint' : '/dashboard');
@@ -60,6 +95,7 @@ exports.getRoomChangeRequests = async (req, res) => {
     const requests = await RoomChange.find()
       .populate('userId', 'name email profileImage')
       .populate('currentRoomId', 'roomNumber floor capacity')
+      .populate('complaintId', 'description category roomChangeStatus')
       .sort({ createdAt: -1 });
 
     res.render('admin/roomChange', {
@@ -102,6 +138,13 @@ exports.approveRoomChange = async (req, res) => {
     request.status = 'Approved';
     await request.save();
 
+    if (request.complaintId) {
+      await Complaint.findByIdAndUpdate(request.complaintId, {
+        roomChangeStatus: 'Approved',
+        status: 'Resolved'
+      });
+    }
+
     await Notification.create({
       userId: user._id,
       title: 'Room Change Approved',
@@ -132,6 +175,12 @@ exports.rejectRoomChange = async (req, res) => {
 
     request.status = 'Rejected';
     await request.save();
+
+    if (request.complaintId) {
+      await Complaint.findByIdAndUpdate(request.complaintId, {
+        roomChangeStatus: 'Rejected'
+      });
+    }
 
     await Notification.create({
       userId: request.userId,

@@ -3,6 +3,7 @@
 // ============================================================
 const Complaint = require('../models/Complaint');
 const User = require('../models/User');
+const RoomChange = require('../models/RoomChange');
 
 // GET /complaint
 exports.getComplaints = async (req, res) => {
@@ -64,14 +65,39 @@ exports.postComplaint = async (req, res) => {
     }
 
     if (finalType === 'private' && category === 'Roommate Complaint') {
+      const pendingRoomChange = await RoomChange.findOne({
+        userId: req.session.userId,
+        status: 'Pending'
+      });
+
       // Only roommate complaints can request room change
       complaintData.isRoomChangeRequested = req.body.requestRoomChange === 'on';
+      if (complaintData.isRoomChangeRequested && pendingRoomChange) {
+        req.flash('error', 'You already have a pending room change request.');
+        return res.redirect('/complaint');
+      }
+
+      if (complaintData.isRoomChangeRequested && (!user.roomId || user.roomStatus !== 'Allocated')) {
+        req.flash('error', 'You need an allocated room before requesting a room change.');
+        return res.redirect('/complaint');
+      }
+
       if (complaintData.isRoomChangeRequested) {
         complaintData.roomChangeStatus = 'Pending';
       }
     }
 
-    await Complaint.create(complaintData);
+    const complaint = await Complaint.create(complaintData);
+
+    if (complaintData.isRoomChangeRequested) {
+      await RoomChange.create({
+        userId: req.session.userId,
+        currentRoomId: user.roomId._id,
+        complaintId: complaint._id,
+        reason: description.trim(),
+      });
+    }
+
     req.flash('success', 'Complaint submitted successfully.');
     res.redirect('/complaint');
   } catch (err) {
@@ -175,6 +201,11 @@ exports.handleRoomChange = async (req, res) => {
       complaint.roomChangeStatus = 'Approved';
       complaint.status = 'Resolved';
 
+      await RoomChange.findOneAndUpdate(
+        { complaintId: complaint._id, status: 'Pending' },
+        { status: 'Approved' }
+      );
+
       await require('../models/Notification').create({
         userId: user._id,
         title: 'Room Change Approved',
@@ -187,6 +218,10 @@ exports.handleRoomChange = async (req, res) => {
       await adminController.executeSmartAllocation();
     } else {
       complaint.roomChangeStatus = 'Rejected';
+      await RoomChange.findOneAndUpdate(
+        { complaintId: complaint._id, status: 'Pending' },
+        { status: 'Rejected' }
+      );
       await require('../models/Notification').create({
         userId: complaint.userId,
         title: 'Room Change Rejected',

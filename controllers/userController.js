@@ -144,10 +144,14 @@ exports.getRoomRequest = async (req, res) => {
         }));
     }
 
+    // Get latest room change request (for CTA status display)
+    const roomChangeRequest = await RoomChange.findOne({ userId: user._id }).sort({ createdAt: -1 });
+
     res.render('user/room', {
       title: 'Room Request',
       user,
       roommates,
+      roomChangeRequest,
       errors: req.flash('error'),
       success: req.flash('success'),
     });
@@ -156,6 +160,7 @@ exports.getRoomRequest = async (req, res) => {
     res.redirect('/dashboard');
   }
 };
+
 
 exports.postRoomRequest = async (req, res) => {
   try {

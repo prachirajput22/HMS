@@ -5,6 +5,7 @@
     <%- include('../partials/topbar') %>
     <div class="page-content">
 
+      <%- /* Flash messages */ %>
       <% if (success && success.length > 0) { %>
         <% success.forEach(s => { %><div class="alert alert-success"><i class="fas fa-check-circle"></i> <%= s %></div><% }) %>
       <% } %>
@@ -12,95 +13,496 @@
         <% errors.forEach(e => { %><div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <%= e %></div><% }) %>
       <% } %>
 
-      <!-- Current Status -->
-      <div class="glass-card mb-3">
-        <div class="section-header" style="margin-bottom:1rem;">
-          <h3><i class="fas fa-info-circle"></i> Room Status</h3>
-          <span class="badge badge-<%= user.roomStatus === 'Allocated' ? 'success' : (user.roomStatus === 'Waiting' ? 'warning' : 'info') %>">
-            <span class="status-dot <%= user.roomStatus.toLowerCase().replace(' ', '-') %>"></span>
-            <%= user.roomStatus %>
-          </span>
+      <!-- ══════════════════════════════════════════════════════════
+           SECTION 1 — ROOM STATUS HERO CARD
+           ══════════════════════════════════════════════════════════ -->
+      <div class="rp-hero-card">
+        <!-- Decorative blobs -->
+        <div class="rp-hero-blob rp-hero-blob-1"></div>
+        <div class="rp-hero-blob rp-hero-blob-2"></div>
+
+        <div class="rp-hero-top">
+          <div class="rp-hero-title-wrap">
+            <div class="rp-hero-icon-wrap">
+              <i class="fas fa-building"></i>
+            </div>
+            <div>
+              <h2 class="rp-hero-title">Room Status</h2>
+              <p class="rp-hero-sub">Your current hostel accommodation at MITS</p>
+            </div>
+          </div>
+          <% if (user.roomStatus === 'Allocated') { %>
+            <span class="rp-status-badge rp-badge-allocated">
+              <span class="rp-badge-dot"></span> ALLOCATED
+            </span>
+          <% } else if (user.roomStatus === 'Waiting') { %>
+            <span class="rp-status-badge rp-badge-waiting">
+              <span class="rp-badge-dot"></span> WAITING
+            </span>
+          <% } else { %>
+            <span class="rp-status-badge rp-badge-none">
+              <span class="rp-badge-dot"></span> NOT REQUESTED
+            </span>
+          <% } %>
         </div>
 
         <% if (user.roomStatus === 'Allocated' && user.roomId) { %>
-          <div class="stats-grid" style="grid-template-columns:repeat(auto-fill,minmax(140px,1fr));">
-            <div class="stat-card">
-              <div class="stat-icon blue"><i class="fas fa-door-open"></i></div>
-              <div class="stat-info">
-                <h3><%= user.roomId.roomNumber %></h3>
-                <p>Room Number</p>
+          <!-- Stat Cards Row -->
+          <div class="rp-stats-row">
+            <div class="rp-stat-tile rp-tile-blue">
+              <div class="rp-stat-tile-icon"><i class="fas fa-door-open"></i></div>
+              <div class="rp-stat-tile-body">
+                <span class="rp-stat-tile-val"><%= user.roomId.roomNumber %></span>
+                <span class="rp-stat-tile-lbl">Room Number</span>
               </div>
             </div>
-            <div class="stat-card">
-              <div class="stat-icon green"><i class="fas fa-layer-group"></i></div>
-              <div class="stat-info">
-                <h3><%= user.roomId.floor %></h3>
-                <p>Floor</p>
+            <div class="rp-stat-tile rp-tile-green">
+              <div class="rp-stat-tile-icon"><i class="fas fa-layer-group"></i></div>
+              <div class="rp-stat-tile-body">
+                <span class="rp-stat-tile-val">Floor <%= user.roomId.floor %></span>
+                <span class="rp-stat-tile-lbl">Level</span>
               </div>
             </div>
-            <div class="stat-card">
-              <div class="stat-icon purple"><i class="fas fa-users"></i></div>
-              <div class="stat-info">
-                <h3><%= user.roomId.occupants ? user.roomId.occupants.length : '—' %>/<%= user.roomId.capacity %></h3>
-                <p>Occupancy</p>
+            <div class="rp-stat-tile rp-tile-purple">
+              <div class="rp-stat-tile-icon"><i class="fas fa-users"></i></div>
+              <div class="rp-stat-tile-body">
+                <span class="rp-stat-tile-val"><%= user.roomId.occupants ? user.roomId.occupants.length : '—' %>/<%= user.roomId.capacity %></span>
+                <span class="rp-stat-tile-lbl">Occupancy</span>
               </div>
             </div>
-            <div class="stat-card">
-              <div class="stat-icon orange"><i class="fas fa-rupee-sign"></i></div>
-              <div class="stat-info">
-                <h3>₹<%= user.roomId.monthlyFee %></h3>
-                <p>Monthly Fee</p>
+            <div class="rp-stat-tile rp-tile-orange">
+              <div class="rp-stat-tile-icon"><i class="fas fa-rupee-sign"></i></div>
+              <div class="rp-stat-tile-body">
+                <span class="rp-stat-tile-val">₹<%= user.roomId.monthlyFee %></span>
+                <span class="rp-stat-tile-lbl">Monthly Fee</span>
+              </div>
+            </div>
+            <div class="rp-stat-tile rp-tile-teal">
+              <div class="rp-stat-tile-icon"><i class="fas fa-calendar-check"></i></div>
+              <div class="rp-stat-tile-body">
+                <span class="rp-stat-tile-val">Block A</span>
+                <span class="rp-stat-tile-lbl">Hostel Wing</span>
               </div>
             </div>
           </div>
+
         <% } else if (user.roomStatus === 'Waiting') { %>
-          <div class="alert alert-warning">
-            <i class="fas fa-clock"></i> You are in waiting list. Allocation will be done soon.
+          <div class="rp-waiting-state">
+            <div class="rp-waiting-pulse">
+              <i class="fas fa-clock"></i>
+            </div>
+            <div>
+              <h4>You're on the waiting list</h4>
+              <p>Our smart allocation engine will pair you with compatible roommates soon. You'll be notified when a room is assigned.</p>
+            </div>
           </div>
+
         <% } else { %>
-          <p class="text-muted" style="margin-bottom:1rem;">You haven't requested a room yet. Our smart matching system will find the best room for you based on your preferences.</p>
-          <form action="/request-room" method="POST">
-            <button type="submit" class="btn btn-primary btn-lg">
-              <i class="fas fa-magic"></i> Request Smart Room Allocation
-            </button>
-          </form>
+          <div class="rp-no-room-state">
+            <div class="rp-no-room-icon"><i class="fas fa-home"></i></div>
+            <div>
+              <h4>No room assigned yet</h4>
+              <p>Request a room now and our intelligent matching system will find the best fit based on your lifestyle preferences.</p>
+              <form action="/request-room" method="POST" style="margin-top:1.25rem;">
+                <button type="submit" class="btn btn-primary btn-lg rp-request-btn">
+                  <i class="fas fa-magic"></i> Request Smart Room Allocation
+                </button>
+              </form>
+            </div>
+          </div>
         <% } %>
       </div>
 
-      <!-- Roommate Compatibility -->
-      <% if (typeof roommates !== 'undefined' && roommates.length > 0) { %>
-        <div class="section-header">
-          <h3><i class="fas fa-heart"></i> Roommate Compatibility</h3>
-        </div>
-        <% roommates.forEach(mate => { %>
-          <div class="roommate-card">
-            <div class="roommate-avatar">
-              <% if (mate.profileImage) { %>
-                <img src="<%= mate.profileImage %>" alt="<%= mate.name %>" />
-              <% } else { %>
-                <%= mate.name.charAt(0).toUpperCase() %>
-              <% } %>
+      <!-- ══════════════════════════════════════════════════════════
+           TWO-COLUMN GRID (Roommates + Facilities)
+           ══════════════════════════════════════════════════════════ -->
+      <% if (user.roomStatus === 'Allocated') { %>
+      <div class="rp-two-col">
+
+        <!-- ─── LEFT: ROOMMATE DETAILS ─── -->
+        <div>
+          <div class="rp-section-header">
+            <div class="rp-section-icon rp-icon-pink"><i class="fas fa-heart"></i></div>
+            <div>
+              <h3 class="rp-section-title">Roommate Details</h3>
+              <p class="rp-section-sub">Your matched companions in Room <%= user.roomId ? user.roomId.roomNumber : '' %></p>
             </div>
-            <div class="roommate-info">
-              <h4><%= mate.name %></h4>
-              <div class="roommate-tags">
-                <span class="tag"><%= mate.preferences.sleepSchedule === 'Early Bird' ? '🌅' : '🌙' %> <%= mate.preferences.sleepSchedule %></span>
-                <span class="tag"><%= mate.preferences.food === 'Veg' ? '🥬' : '🍗' %> <%= mate.preferences.food %></span>
-                <span class="tag"><%= mate.preferences.lifestyle === 'Quiet' ? '🤫' : '🎉' %> <%= mate.preferences.lifestyle %></span>
+          </div>
+
+          <% if (typeof roommates !== 'undefined' && roommates.length > 0) { %>
+            <% roommates.forEach(function(mate, idx) {
+                 const gradients = ['linear-gradient(135deg,#6366f1,#a855f7)','linear-gradient(135deg,#10b981,#3b82f6)','linear-gradient(135deg,#f59e0b,#ef4444)'];
+                 const grad = gradients[idx % gradients.length];
+            %>
+            <div class="rp-roommate-card">
+              <div class="rp-rm-avatar" style="background: <%= grad %>;">
+                <% if (mate.profileImage) { %>
+                  <img src="<%= mate.profileImage %>" alt="<%= mate.name %>" />
+                <% } else { %>
+                  <%= mate.name.charAt(0).toUpperCase() %>
+                <% } %>
+              </div>
+              <div class="rp-rm-info">
+                <div class="rp-rm-name-row">
+                  <h4 class="rp-rm-name"><%= mate.name %></h4>
+                  <span class="rp-rm-compat-badge <%= mate.compatibility >= 80 ? 'high' : (mate.compatibility >= 50 ? 'medium' : 'low') %>">
+                    <%= mate.compatibility %>% Match
+                  </span>
+                </div>
+                <p class="rp-rm-course"><i class="fas fa-graduation-cap"></i> Computer Science &amp; Engineering</p>
+                <div class="rp-rm-tags">
+                  <span class="rp-rm-tag">
+                    <i class="fas fa-moon"></i>
+                    <%= mate.preferences.sleepSchedule %>
+                  </span>
+                  <span class="rp-rm-tag">
+                    <i class="fas fa-leaf"></i>
+                    <%= mate.preferences.food %>
+                  </span>
+                  <span class="rp-rm-tag">
+                    <i class="fas fa-music"></i>
+                    <%= mate.preferences.lifestyle %>
+                  </span>
+                </div>
+                <div class="rp-rm-progress-wrap">
+                  <div class="rp-rm-progress-track">
+                    <div class="rp-rm-progress-fill <%= mate.compatibility >= 80 ? 'high' : (mate.compatibility >= 50 ? 'medium' : 'low') %>" style="width:<%= mate.compatibility %>%"></div>
+                  </div>
+                  <span class="rp-rm-progress-lbl"><%= mate.compatibility >= 80 ? 'Great Match' : (mate.compatibility >= 50 ? 'Good Match' : 'Fair Match') %></span>
+                </div>
               </div>
             </div>
-            <div class="compatibility-score">
-              <span class="score-value <%= mate.compatibility >= 80 ? 'high' : (mate.compatibility >= 50 ? 'medium' : 'low') %>"><%= mate.compatibility %>%</span>
-              <span>Match</span>
-              <div class="progress-bar">
-                <div class="progress-fill <%= mate.compatibility >= 80 ? 'high' : (mate.compatibility >= 50 ? 'medium' : 'low') %>" style="width:<%= mate.compatibility %>%"></div>
+            <% }) %>
+          <% } else { %>
+            <div class="rp-empty-state">
+              <div class="rp-empty-icon"><i class="fas fa-user-friends"></i></div>
+              <h4>No roommates yet</h4>
+              <p>Your room is waiting to be filled. Roommate details will appear here once others are allocated.</p>
+            </div>
+          <% } %>
+        </div>
+
+        <!-- ─── RIGHT: ROOM FACILITIES ─── -->
+        <div>
+          <div class="rp-section-header">
+            <div class="rp-section-icon rp-icon-blue"><i class="fas fa-star"></i></div>
+            <div>
+              <h3 class="rp-section-title">Room Facilities</h3>
+              <p class="rp-section-sub">Amenities included with your room</p>
+            </div>
+          </div>
+
+          <div class="rp-facilities-grid">
+            <div class="rp-facility-card rp-facility-active">
+              <div class="rp-facility-icon"><i class="fas fa-wifi"></i></div>
+              <span class="rp-facility-name">Wi-Fi</span>
+              <span class="rp-facility-tag available">Included</span>
+            </div>
+            <div class="rp-facility-card rp-facility-active">
+              <div class="rp-facility-icon"><i class="fas fa-bed"></i></div>
+              <span class="rp-facility-name">Bed</span>
+              <span class="rp-facility-tag available">Single</span>
+            </div>
+            <div class="rp-facility-card rp-facility-active">
+              <div class="rp-facility-icon"><i class="fas fa-fan"></i></div>
+              <span class="rp-facility-name">Ceiling Fan</span>
+              <span class="rp-facility-tag available">Included</span>
+            </div>
+            <div class="rp-facility-card rp-facility-active">
+              <div class="rp-facility-icon"><i class="fas fa-book"></i></div>
+              <span class="rp-facility-name">Study Table</span>
+              <span class="rp-facility-tag available">Included</span>
+            </div>
+            <div class="rp-facility-card rp-facility-active">
+              <div class="rp-facility-icon"><i class="fas fa-archive"></i></div>
+              <span class="rp-facility-name">Cupboard</span>
+              <span class="rp-facility-tag available">Included</span>
+            </div>
+            <div class="rp-facility-card rp-facility-active">
+              <div class="rp-facility-icon"><i class="fas fa-shower"></i></div>
+              <span class="rp-facility-name">Bathroom</span>
+              <span class="rp-facility-tag available">Attached</span>
+            </div>
+            <div class="rp-facility-card rp-facility-active">
+              <div class="rp-facility-icon"><i class="fas fa-tshirt"></i></div>
+              <span class="rp-facility-name">Laundry</span>
+              <span class="rp-facility-tag available">Shared</span>
+            </div>
+            <div class="rp-facility-card rp-facility-inactive">
+              <div class="rp-facility-icon"><i class="fas fa-snowflake"></i></div>
+              <span class="rp-facility-name">AC</span>
+              <span class="rp-facility-tag unavailable">Not Avail.</span>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- end rp-two-col -->
+
+      <!-- ══════════════════════════════════════════════════════════
+           BOTTOM THREE-COLUMN GRID
+           ══════════════════════════════════════════════════════════ -->
+      <div class="rp-three-col">
+
+        <!-- ─── COL 1: FEE & ALLOCATION INFO ─── -->
+        <div class="rp-panel">
+          <div class="rp-panel-header rp-panel-header-green">
+            <i class="fas fa-receipt"></i>
+            <div>
+              <h3>Fee & Allocation Info</h3>
+              <p>Billing &amp; assignment overview</p>
+            </div>
+          </div>
+          <div class="rp-info-list">
+            <div class="rp-info-row">
+              <span class="rp-info-label"><i class="fas fa-rupee-sign"></i> Monthly Fee</span>
+              <span class="rp-info-value rp-value-green">₹<%= user.roomId ? user.roomId.monthlyFee : '4,500' %></span>
+            </div>
+            <div class="rp-info-row">
+              <span class="rp-info-label"><i class="fas fa-calendar-alt"></i> Next Due Date</span>
+              <span class="rp-info-value">5 May 2026</span>
+            </div>
+            <div class="rp-info-row">
+              <span class="rp-info-label"><i class="fas fa-check-circle"></i> Allocation Date</span>
+              <span class="rp-info-value">10 Jan 2026</span>
+            </div>
+            <div class="rp-info-row">
+              <span class="rp-info-label"><i class="fas fa-building"></i> Hostel Block</span>
+              <span class="rp-info-value">Block A — Wing 2</span>
+            </div>
+            <div class="rp-info-row">
+              <span class="rp-info-label"><i class="fas fa-door-open"></i> Room Type</span>
+              <span class="rp-info-value"><%= user.roomId ? user.roomId.type || 'Standard' : 'Standard' %></span>
+            </div>
+          </div>
+          <a href="/payment" class="btn btn-success btn-block rp-action-btn">
+            <i class="fas fa-credit-card"></i> Pay Hostel Fee
+          </a>
+        </div>
+
+        <!-- ─── COL 2: COMPLAINTS & MAINTENANCE ─── -->
+        <div class="rp-panel">
+          <div class="rp-panel-header rp-panel-header-orange">
+            <i class="fas fa-tools"></i>
+            <div>
+              <h3>Complaints &amp; Maintenance</h3>
+              <p>Report issues or track your requests</p>
+            </div>
+          </div>
+          <div class="rp-quick-actions">
+            <a href="/complaint" class="rp-quick-btn rp-qbtn-orange">
+              <div class="rp-qbtn-icon"><i class="fas fa-flag"></i></div>
+              <div>
+                <span class="rp-qbtn-label">File Complaint</span>
+                <span class="rp-qbtn-sub">Report a new issue</span>
+              </div>
+              <i class="fas fa-chevron-right rp-qbtn-arrow"></i>
+            </a>
+            <a href="/complaint" class="rp-quick-btn rp-qbtn-blue">
+              <div class="rp-qbtn-icon"><i class="fas fa-history"></i></div>
+              <div>
+                <span class="rp-qbtn-label">Complaint History</span>
+                <span class="rp-qbtn-sub">View all past complaints</span>
+              </div>
+              <i class="fas fa-chevron-right rp-qbtn-arrow"></i>
+            </a>
+            <a href="/complaint" class="rp-quick-btn rp-qbtn-red">
+              <div class="rp-qbtn-icon"><i class="fas fa-wrench"></i></div>
+              <div>
+                <span class="rp-qbtn-label">Maintenance Issue</span>
+                <span class="rp-qbtn-sub">Report repairs needed</span>
+              </div>
+              <i class="fas fa-chevron-right rp-qbtn-arrow"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- ─── COL 3: WARDEN / EMERGENCY CONTACT ─── -->
+        <div class="rp-panel">
+          <div class="rp-panel-header rp-panel-header-purple">
+            <i class="fas fa-shield-alt"></i>
+            <div>
+              <h3>Warden Contact</h3>
+              <p>Official &amp; emergency assistance</p>
+            </div>
+          </div>
+          <div class="rp-warden-card">
+            <div class="rp-warden-avatar">
+              <i class="fas fa-user-tie"></i>
+            </div>
+            <div class="rp-warden-info">
+              <h4>Dr. Ramesh Gupta</h4>
+              <p class="rp-warden-role">Hostel Warden — Block A</p>
+            </div>
+          </div>
+          <div class="rp-warden-contacts">
+            <div class="rp-contact-row">
+              <i class="fas fa-phone-alt"></i>
+              <span>+91 98765 43210</span>
+              <a href="tel:+919876543210" class="rp-contact-link">Call</a>
+            </div>
+            <div class="rp-contact-row">
+              <i class="fas fa-envelope"></i>
+              <span>warden.a@mits.edu</span>
+              <a href="mailto:warden.a@mits.edu" class="rp-contact-link">Mail</a>
+            </div>
+            <div class="rp-contact-row rp-office-hours">
+              <i class="fas fa-clock"></i>
+              <span>Office Hours: 9AM – 5PM</span>
+            </div>
+          </div>
+          <a href="tel:+919876543210" class="btn btn-danger btn-block rp-emergency-btn">
+            <i class="fas fa-phone-volume"></i> Emergency Help
+          </a>
+        </div>
+
+      </div><!-- end rp-three-col -->
+
+      <!-- ══════════════════════════════════════════════════════════
+           SECTION: ROOM CHANGE CTA
+           ══════════════════════════════════════════════════════════ -->
+      <div id="room-change-section" class="rp-change-card">
+        <div class="rp-change-left">
+          <div class="rp-change-icon"><i class="fas fa-random"></i></div>
+          <div>
+            <h3 class="rp-change-title">Request Room Change</h3>
+            <p class="rp-change-desc">
+              Unhappy with your current room? You can submit a formal room change request.
+              <strong>Please ensure you have filed a roommate complaint first</strong> — this is required by the administration before a change request is processed.
+            </p>
+            <% const hasPendingChange = typeof roomChangeRequest !== 'undefined' && roomChangeRequest && roomChangeRequest.status === 'Pending'; %>
+            <% if (hasPendingChange) { %>
+              <div class="rp-change-pending">
+                <i class="fas fa-hourglass-half"></i>
+                Your room change request is <strong>pending review</strong>. The admin will respond shortly.
+              </div>
+            <% } else if (typeof roomChangeRequest !== 'undefined' && roomChangeRequest && roomChangeRequest.status === 'Approved') { %>
+              <div class="rp-change-approved">
+                <i class="fas fa-check-double"></i>
+                Your room change request was <strong>approved</strong>. Reallocation is in progress.
+              </div>
+            <% } %>
+          </div>
+        </div>
+        <div class="rp-change-actions">
+          <% if (hasPendingChange) { %>
+            <button class="btn rp-change-btn-disabled" disabled>
+              <i class="fas fa-clock"></i> Request Pending
+            </button>
+          <% } else { %>
+            <button class="btn btn-primary rp-change-btn-cta" onclick="openModal('roomChangeModal')">
+              <i class="fas fa-random"></i> Request Room Change
+            </button>
+          <% } %>
+          <a href="/complaint" class="btn btn-secondary rp-change-complaint-btn">
+            <i class="fas fa-flag"></i> File Complaint First
+          </a>
+        </div>
+      </div>
+
+      <% } /* end if allocated */ %>
+
+      <!-- ══════════════════════════════════════════════════════════
+           UNALLOCATED STATE: Full feature preview
+           ══════════════════════════════════════════════════════════ -->
+      <% if (user.roomStatus !== 'Allocated') { %>
+
+        <!-- Facilities Preview -->
+        <div class="rp-section-header" style="margin-top:2rem;">
+          <div class="rp-section-icon rp-icon-blue"><i class="fas fa-star"></i></div>
+          <div>
+            <h3 class="rp-section-title">Included Facilities</h3>
+            <p class="rp-section-sub">Standard amenities available in all rooms</p>
+          </div>
+        </div>
+        <div class="rp-facilities-grid rp-facilities-wide">
+          <div class="rp-facility-card rp-facility-active"><div class="rp-facility-icon"><i class="fas fa-wifi"></i></div><span class="rp-facility-name">Wi-Fi</span><span class="rp-facility-tag available">Included</span></div>
+          <div class="rp-facility-card rp-facility-active"><div class="rp-facility-icon"><i class="fas fa-bed"></i></div><span class="rp-facility-name">Bed</span><span class="rp-facility-tag available">Single</span></div>
+          <div class="rp-facility-card rp-facility-active"><div class="rp-facility-icon"><i class="fas fa-fan"></i></div><span class="rp-facility-name">Ceiling Fan</span><span class="rp-facility-tag available">Included</span></div>
+          <div class="rp-facility-card rp-facility-active"><div class="rp-facility-icon"><i class="fas fa-book"></i></div><span class="rp-facility-name">Study Table</span><span class="rp-facility-tag available">Included</span></div>
+          <div class="rp-facility-card rp-facility-active"><div class="rp-facility-icon"><i class="fas fa-archive"></i></div><span class="rp-facility-name">Cupboard</span><span class="rp-facility-tag available">Included</span></div>
+          <div class="rp-facility-card rp-facility-active"><div class="rp-facility-icon"><i class="fas fa-shower"></i></div><span class="rp-facility-name">Bathroom</span><span class="rp-facility-tag available">Attached</span></div>
+          <div class="rp-facility-card rp-facility-active"><div class="rp-facility-icon"><i class="fas fa-tshirt"></i></div><span class="rp-facility-name">Laundry</span><span class="rp-facility-tag available">Shared</span></div>
+        </div>
+
+        <!-- Warden contact in unallocated view -->
+        <div style="margin-top:2rem; display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;">
+          <div class="rp-panel">
+            <div class="rp-panel-header rp-panel-header-purple">
+              <i class="fas fa-shield-alt"></i>
+              <div>
+                <h3>Warden Contact</h3>
+                <p>Need help? Reach out.</p>
+              </div>
+            </div>
+            <div class="rp-warden-card">
+              <div class="rp-warden-avatar"><i class="fas fa-user-tie"></i></div>
+              <div class="rp-warden-info">
+                <h4>Dr. Ramesh Gupta</h4>
+                <p class="rp-warden-role">Hostel Warden — Block A</p>
+              </div>
+            </div>
+            <div class="rp-warden-contacts">
+              <div class="rp-contact-row"><i class="fas fa-phone-alt"></i><span>+91 98765 43210</span><a href="tel:+919876543210" class="rp-contact-link">Call</a></div>
+              <div class="rp-contact-row"><i class="fas fa-envelope"></i><span>warden.a@mits.edu</span><a href="mailto:warden.a@mits.edu" class="rp-contact-link">Mail</a></div>
+            </div>
+            <a href="tel:+919876543210" class="btn btn-danger btn-block rp-emergency-btn"><i class="fas fa-phone-volume"></i> Emergency Help</a>
+          </div>
+          <div class="rp-panel">
+            <div class="rp-panel-header rp-panel-header-orange">
+              <i class="fas fa-info-circle"></i>
+              <div><h3>How it Works</h3><p>Room allocation process</p></div>
+            </div>
+            <div class="rp-howit-steps">
+              <div class="rp-howit-step">
+                <div class="rp-howit-num">1</div>
+                <div><strong>Request a Room</strong><p>Click "Request Smart Allocation" to join the waitlist.</p></div>
+              </div>
+              <div class="rp-howit-step">
+                <div class="rp-howit-num">2</div>
+                <div><strong>Smart Matching</strong><p>Our algorithm matches you with compatible roommates.</p></div>
+              </div>
+              <div class="rp-howit-step">
+                <div class="rp-howit-num">3</div>
+                <div><strong>Admin Allocation</strong><p>Admin triggers allocation and you get Room &amp; Floor details.</p></div>
+              </div>
+              <div class="rp-howit-step rp-howit-done">
+                <div class="rp-howit-num rp-howit-num-done"><i class="fas fa-check"></i></div>
+                <div><strong>Move In!</strong><p>Fee is generated, chat with roommates, and you're all set.</p></div>
               </div>
             </div>
           </div>
-        <% }) %>
+        </div>
+
       <% } %>
 
+    </div><!-- /page-content -->
+  </div><!-- /main-content -->
+</div><!-- /app-layout -->
+
+<!-- ═══════════════════════════════════════════
+     ROOM CHANGE MODAL
+     ═══════════════════════════════════════════ -->
+<div id="roomChangeModal" class="modal-overlay hidden">
+  <div class="modal-content glass-card">
+    <div class="modal-header">
+      <h3><i class="fas fa-random"></i> Request Room Change</h3>
+      <button class="modal-close" onclick="closeModal('roomChangeModal')"><i class="fas fa-times"></i></button>
     </div>
+    <div class="rp-modal-note">
+      <i class="fas fa-info-circle"></i>
+      <span>You must have already filed a <a href="/complaint">formal roommate complaint</a> before submitting this request. The admin will verify this before processing.</span>
+    </div>
+    <form action="/room-change/request" method="POST">
+      <div class="form-group mt-2">
+        <label for="reason">Reason for Room Change</label>
+        <textarea id="reason" name="reason" class="form-control" rows="4" placeholder="Briefly explain why you need a room change (e.g., lifestyle conflicts, noise issues, cleanliness concerns)..." required></textarea>
+      </div>
+      <div class="form-group" style="margin-top:1.5rem; display:flex; gap:10px; justify-content:flex-end;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('roomChangeModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Submit Request</button>
+      </div>
+    </form>
   </div>
 </div>
+
 <%- include('../partials/footer') %>
