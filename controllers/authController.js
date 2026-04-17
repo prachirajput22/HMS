@@ -1,4 +1,4 @@
-ge// ============================================================
+// ============================================================
 // Auth Controller — User & Admin authentication
 // ============================================================
 const bcrypt = require('bcryptjs');
@@ -51,8 +51,8 @@ exports.postRegister = async (req, res) => {
         lifestyle,
         priorities: {
           sleepSchedule: Math.min(3, Math.max(1, parseInt(sleepPriority) || 1)),
-          food:          Math.min(3, Math.max(1, parseInt(foodPriority) || 1)),
-          lifestyle:     Math.min(3, Math.max(1, parseInt(lifestylePriority) || 1)),
+          food: Math.min(3, Math.max(1, parseInt(foodPriority) || 1)),
+          lifestyle: Math.min(3, Math.max(1, parseInt(lifestylePriority) || 1)),
         },
       },
     });
