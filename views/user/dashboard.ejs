@@ -219,12 +219,15 @@
     </div>
     <form action="/room-change/request" method="POST">
       <div class="form-group mt-2">
-        <label for="reason">Reason for Change</label>
-        <textarea id="reason" name="reason" class="form-control" rows="4" placeholder="Briefly explain why you need a room change..." required></textarea>
+        <label for="reason">Roommate Complaint</label>
+        <p class="text-muted" style="margin:0.35rem 0 0.75rem; font-size:0.86rem;">
+          Before sending a room change request, you must explain the issue with your roommate. This complaint will be shared with the admin for review.
+        </p>
+        <textarea id="reason" name="reason" class="form-control" rows="5" placeholder="Explain the roommate issue and why a room change is needed..." required></textarea>
       </div>
       <div class="form-group" style="margin-top:1.5rem; text-align:right;">
         <button type="button" class="btn btn-secondary" onclick="closeModal('roomChangeModal')">Cancel</button>
-        <button type="submit" class="btn btn-primary" style="margin-left:8px;">Submit Request</button>
+        <button type="submit" class="btn btn-primary" style="margin-left:8px;">Submit Complaint & Request</button>
       </div>
     </form>
   </div>
