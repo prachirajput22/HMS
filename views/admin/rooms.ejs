@@ -90,7 +90,7 @@
                   <span>Room <strong><%= room.roomNumber %></strong></span>
                 </div>
                 <span class="badge badge-<%= room.status === 'Available' ? 'success' : (room.status === 'Full' ? 'danger' : 'warning') %>">
-                  <span class="status-dot <%= room.status.toLowerCase() %>"></span>
+                  <span class="status-dot-mini <%= room.status.toLowerCase() %>"></span>
                   <%= room.status %>
                 </span>
               </div>
