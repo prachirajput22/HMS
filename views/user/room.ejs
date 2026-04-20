@@ -17,9 +17,6 @@
            SECTION 1 — ROOM STATUS HERO CARD
            ══════════════════════════════════════════════════════════ -->
       <div class="rp-hero-card">
-        <!-- Decorative blobs -->
-        <div class="rp-hero-blob rp-hero-blob-1"></div>
-        <div class="rp-hero-blob rp-hero-blob-2"></div>
 
         <div class="rp-hero-top">
           <div class="rp-hero-title-wrap">
@@ -131,11 +128,11 @@
 
           <% if (typeof roommates !== 'undefined' && roommates.length > 0) { %>
             <% roommates.forEach(function(mate, idx) {
-                 const gradients = ['linear-gradient(135deg,#6366f1,#a855f7)','linear-gradient(135deg,#10b981,#3b82f6)','linear-gradient(135deg,#f59e0b,#ef4444)'];
-                 const grad = gradients[idx % gradients.length];
+             const avatarColors = ['#1e293b','#334155','#f97316','#c2410c','#1e3a5f'];
+             const avatarBg = avatarColors[idx % avatarColors.length];
             %>
             <div class="rp-roommate-card">
-              <div class="rp-rm-avatar" style="background: <%= grad %>;">
+              <div class="rp-rm-avatar" style="background: <%= avatarBg %>;">
                 <% if (mate.profileImage) { %>
                   <img src="<%= mate.profileImage %>" alt="<%= mate.name %>" />
                 <% } else { %>

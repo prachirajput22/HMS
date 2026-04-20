@@ -55,7 +55,7 @@
             </div>
           <% }) %>
           <% if (typeof user !== 'undefined') { %>
-            <div style="padding:10px;text-align:center;border-top:1px solid rgba(255,255,255,0.08);">
+            <div style="padding:10px;text-align:center;border-top:1px solid var(--border);">
               <button onclick="markAllRead()" style="background:none;border:none;color:var(--primary);font-size:0.82rem;cursor:pointer;">
                 <i class="fas fa-check-double"></i> Mark all as read
               </button>
@@ -66,9 +66,6 @@
     </div>
     <% } %>
 
-    <button class="dark-toggle" onclick="toggleDarkMode()" aria-label="Toggle dark mode">
-      <i class="fas fa-moon"></i>
-    </button>
 
     <% if (typeof user !== 'undefined' && user) { %>
       <a href="/profile" class="topbar-avatar" title="<%= user.name %>">
