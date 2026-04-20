@@ -11,28 +11,9 @@ function toggleSidebar() {
   if (overlay) overlay.classList.toggle('visible');
 }
 
-// ---------- Dark Mode Toggle ----------
-function toggleDarkMode() {
-  const html = document.documentElement;
-  const current = html.getAttribute('data-theme');
-  const next = current === 'dark' ? 'light' : 'dark';
-  html.setAttribute('data-theme', next);
-  localStorage.setItem('theme', next);
 
-  // Update toggle icon
-  const icon = document.querySelector('.dark-toggle i');
-  if (icon) {
-    icon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-  }
-}
 
-// Restore saved theme
-(function () {
-  const saved = localStorage.getItem('theme');
-  if (saved) {
-    document.documentElement.setAttribute('data-theme', saved);
-  }
-})();
+
 
 // ---------- Notification Dropdown ----------
 function toggleNotifDropdown() {
@@ -373,12 +354,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initialize star rating
   initStarRating();
 
-  // Update dark mode icon on load
-  const theme = document.documentElement.getAttribute('data-theme');
-  const icon = document.querySelector('.dark-toggle i');
-  if (icon) {
-    icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-  }
+
 
   // Smooth scroll for all anchor links
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {

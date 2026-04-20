@@ -17,7 +17,7 @@
         const paidFees = fees.filter(f => f.status === 'Paid');
       %>
 
-      <div class="tabs-container mb-3" style="border-bottom: 2px solid rgba(255,255,255,0.1); display:flex; gap:20px;">
+      <div class="tabs-container mb-3" style="border-bottom: 2px solid var(--border); display:flex; gap:20px;">
         <button class="notif-tab tab-btn active" onclick="switchThemeTab('pending')" id="tab-pending" style="background:none; border:none; color:var(--text-primary); font-size:1.05rem; font-weight:600; padding:8px 4px; cursor:pointer; border-bottom: 3px solid var(--primary);">Pending Dues</button>
         <button class="notif-tab tab-btn" onclick="switchThemeTab('history')" id="tab-history" style="background:none; border:none; color:var(--text-muted); font-size:1.05rem; font-weight:600; padding:8px 4px; cursor:pointer; border-bottom: 3px solid transparent;">Payment History</button>
       </div>

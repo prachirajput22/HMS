@@ -79,7 +79,7 @@
       <div class="filter-controls glass-card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:1rem; padding:10px 15px;">
         <div class="tabs" style="margin:0; border:none; padding:0; background:transparent;">
           <button class="tab-btn active" data-tab="public" onclick="switchThemeTab('public')" id="tab-public" style="background:var(--primary); color:#fff; border-radius:6px; padding:6px 12px; border:none; cursor:pointer;">🌐 Public Complaints</button>
-          <button class="tab-btn" data-tab="private" onclick="switchThemeTab('private')" id="tab-private" style="background:rgba(255,255,255,0.1); color:var(--text-primary); border-radius:6px; padding:6px 12px; border:none; cursor:pointer;">🔒 My Complaints</button>
+          <button class="tab-btn" data-tab="private" onclick="switchThemeTab('private')" id="tab-private" style="background:var(--bg-secondary); color:var(--text-secondary); border-radius:6px; padding:6px 12px; border:none; cursor:pointer;">🔒 My Complaints</button>
         </div>
         <div class="search-filter" style="display:flex; gap:10px; flex:1; max-width:400px;">
           <select id="catFilter" class="form-control" style="flex:1;" onchange="filterComplaints()">
@@ -127,7 +127,7 @@
                 <% if (c.image) { %>
                   <img src="<%= c.image %>" alt="Complaint image" class="complaint-image" onclick="openLightbox('<%= c.image %>')" style="width:100%; max-height:200px; object-fit:cover; border-radius:8px; cursor:pointer;" />
                 <% } %>
-                <div class="complaint-footer" style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.1);">
+                <div class="complaint-footer" style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border);">
                   <span class="badge badge-<%= c.status === 'Resolved' ? 'success' : (c.status === 'In Progress' ? 'warning' : 'info') %>">
                     <%= c.status %>
                   </span>
@@ -186,8 +186,8 @@
         function switchThemeTab(tab) {
           document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
           document.querySelectorAll('.tab-btn').forEach(el => {
-            el.style.background = 'rgba(255,255,255,0.1)';
-            el.style.color = 'var(--text-primary)';
+            el.style.background = 'var(--bg-secondary)';
+            el.style.color = 'var(--text-secondary)';
           });
           document.getElementById('view-' + tab).style.display = 'block';
           document.getElementById('tab-' + tab).style.background = 'var(--primary)';

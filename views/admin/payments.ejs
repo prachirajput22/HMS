@@ -74,7 +74,7 @@
                 <% fees.forEach(fee => { 
                   let isLateDefaulter = fee.lateFee > 0 && fee.status === 'Pending';
                 %>
-                  <tr class="payment-row <%= fee.status %>" style="<%= isLateDefaulter ? 'background-color:rgba(255, 71, 87, 0.08);' : '' %>">
+                  <tr class="payment-row <%= fee.status %>" style="<%= isLateDefaulter ? 'background-color:var(--danger-light);' : '' %>">
                     <td>
                       <strong style="<%= isLateDefaulter ? 'color:var(--danger)' : '' %>"><%= fee.userId ? fee.userId.name : 'Deleted' %></strong>
                       <br><small class="text-muted"><%= fee.userId ? fee.userId.email : '' %></small>
@@ -82,7 +82,7 @@
                         <br><span style="font-size:0.7rem; color: #fff; background: var(--danger); padding:1px 4px; border-radius:4px;">Defaulter</span>
                       <% } %>
                     </td>
-                    <td><span class="badge" style="background:rgba(255,255,255,0.05);color:var(--text-primary);"><%= fee.roomId ? fee.roomId.roomNumber : '—' %></span></td>
+                    <td><span class="badge badge-info"><%= fee.roomId ? fee.roomId.roomNumber : '—' %></span></td>
                     <td>₹<%= fee.amount %></td>
                     <td style="color:<%= fee.lateFee > 0 ? 'var(--danger)' : 'inherit' %>; font-weight: <%= fee.lateFee > 0 ? '600' : 'normal' %>;">
                       <%= fee.lateFee > 0 ? '₹' + fee.lateFee : '—' %>
@@ -125,7 +125,7 @@
                    labels: ['Paid', 'Pending'],
                    datasets: [{
                      data: [<%= paidCount %>, <%= pendingCount %>],
-                     backgroundColor: ['#2ed573', '#ffa502'],
+                     backgroundColor: ['#1e293b', '#f97316'],
                      borderWidth: 0
                    }]
                  },
@@ -133,7 +133,7 @@
                    responsive: true,
                    maintainAspectRatio: false,
                    plugins: {
-                     legend: { position: 'right', labels: { color: '#a4b0be', boxWidth: 12 } }
+                     legend: { position: 'right', labels: { color: '#475569', boxWidth: 12 } }
                    }
                  }
                });
