@@ -47,6 +47,7 @@ router.post('/allocate/reassign', isAdmin, adminController.reassignRoom);
 
 // Payments
 router.get('/payments', isAdmin, adminController.getPayments);
+router.post('/payments/:id/mark-paid', isAdmin, adminController.markFeePaid);
 
 // Complaints
 router.get('/complaints', isAdmin, complaintController.adminGetComplaints);

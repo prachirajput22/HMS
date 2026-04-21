@@ -65,9 +65,10 @@
                   <th>Core Fee</th>
                   <th>Late Penalty</th>
                   <th>Final Total</th>
-                  <th>Current Status</th>
+                  <th>Status</th>
                   <th>Due Date</th>
-                  <th>Recpt. ID</th>
+                  <th>Receipt ID</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -95,6 +96,17 @@
                     </td>
                     <td style="<%= isLateDefaulter ? 'color:var(--danger); font-weight:bold;' : '' %>"><%= new Date(fee.dueDate).toLocaleDateString('en-IN') %></td>
                     <td><span class="badge badge-info" style="font-family:monospace;"><%= fee.receiptId || '—' %></span></td>
+                    <td>
+                      <% if (fee.status === 'Pending') { %>
+                        <form action="/admin/payments/<%= fee._id %>/mark-paid" method="POST" style="display:inline;" onsubmit="return confirm('Mark this fee as paid?')">
+                          <button type="submit" class="btn btn-success" style="padding:4px 10px;font-size:0.78rem;">
+                            <i class="fas fa-check"></i> Mark Paid
+                          </button>
+                        </form>
+                      <% } else { %>
+                        <span style="color:var(--success);font-size:0.82rem;"><i class="fas fa-check-circle"></i> Paid</span>
+                      <% } %>
+                    </td>
                   </tr>
                 <% }) %>
               </tbody>

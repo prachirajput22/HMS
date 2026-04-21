@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema({
   // Roommate matching preferences
   preferences: {
     sleepSchedule: { type: String, enum: ['Early Bird', 'Night Owl'], default: 'Early Bird' },
-    food:          { type: String, enum: ['Veg'], default: 'Veg' },
+    food:          { type: String, enum: ['Veg', 'Non-Veg'], default: 'Veg' },
     lifestyle:     { type: String, enum: ['Quiet', 'Social'], default: 'Quiet' },
 
     // Priority weights: 1 = Low, 2 = Medium, 3 = High

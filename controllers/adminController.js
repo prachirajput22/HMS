@@ -331,6 +331,7 @@ exports.reassignRoom = async (req, res) => {
     await user.save();
 
     await Notification.create({
+      userId: user._id,
       title: 'Room Reassigned',
       message: `You have been reassigned to Room ${newRoom.roomNumber}.`,
       type: 'system',
@@ -603,5 +604,38 @@ exports.getSearch = async (req, res) => {
     });
   } catch (err) {
     res.redirect('/admin/dashboard');
+  }
+};
+
+// ===================== MARK FEE AS PAID (Admin) =====================
+exports.markFeePaid = async (req, res) => {
+  try {
+    const fee = await Fee.findById(req.params.id);
+    if (!fee) {
+      req.flash('error', 'Fee record not found.');
+      return res.redirect('/admin/payments');
+    }
+    if (fee.status === 'Paid') {
+      req.flash('error', 'This fee is already marked as paid.');
+      return res.redirect('/admin/payments');
+    }
+
+    fee.status = 'Paid';
+    fee.paidAt = new Date();
+    await fee.save();
+
+    await Notification.create({
+      userId: fee.userId,
+      title: '✅ Payment Confirmed by Admin',
+      message: `Your hostel fee of ₹${fee.amount + fee.lateFee} has been confirmed by the administrator. Receipt ID: ${fee.receiptId}`,
+      type: 'payment',
+    });
+
+    req.flash('success', `Fee marked as paid. Receipt: ${fee.receiptId}`);
+    res.redirect('/admin/payments');
+  } catch (err) {
+    console.error(err);
+    req.flash('error', 'Failed to mark fee as paid.');
+    res.redirect('/admin/payments');
   }
 };

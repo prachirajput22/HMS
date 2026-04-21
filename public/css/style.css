@@ -142,8 +142,34 @@ h3 { font-size: 1.25rem; }
 /* Hero */
 .hero {
     padding: 7rem 0 6rem;
-    background: var(--bg-primary);
     position: relative; overflow: hidden;
+    background: var(--bg-primary);
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('/images/mits-campus.jpg');
+    background-size: cover;
+    background-position: center top;
+    background-repeat: no-repeat;
+    opacity: 0.28;
+    z-index: 0;
+    transform: scale(1.03);
+}
+
+.hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        180deg,
+        rgba(253, 251, 247, 0.30) 0%,
+        rgba(253, 251, 247, 0.15) 40%,
+        rgba(253, 251, 247, 0.30) 100%
+    );
+    z-index: 0;
 }
 
 
@@ -282,6 +308,140 @@ h3 { font-size: 1.25rem; }
 .cta-content h2 { font-size: clamp(1.75rem, 3vw, 2.75rem); color: white; margin-bottom: 1rem; }
 .cta-content p { color: rgba(255,255,255,0.8); font-size: 1.1rem; margin-bottom: 2.5rem; }
 .cta-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+/* ============================================================
+   THEME TOGGLE BUTTON
+   ============================================================ */
+.theme-toggle-btn {
+  width: 40px; height: 40px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 1rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative; overflow: hidden; flex-shrink: 0;
+}
+.theme-toggle-btn:hover {
+  background: var(--primary); color: white;
+  border-color: var(--primary); transform: rotate(20deg) scale(1.08);
+  box-shadow: 0 4px 12px rgba(30,41,59,0.2);
+}
+.theme-toggle-btn i { transition: all 0.3s ease; }
+
+/* ============================================================
+   DARK MODE — Landing Page
+   ============================================================ */
+body.dark-mode,
+body.dark-mode.landing-page {
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-card: #1c2128;
+  --bg-input: #1c2128;
+  --text-primary: #e6edf3;
+  --text-secondary: #cdd9e5;
+  --text-muted: #8b949e;
+  --border: #30363d;
+  --border-light: #21262d;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Navbar dark */
+body.dark-mode .navbar {
+  background: #0d1117;
+  border-bottom-color: #30363d;
+  box-shadow: 0 1px 0 #30363d;
+}
+body.dark-mode .brand { color: #e6edf3; }
+body.dark-mode .nav-links a { color: #8b949e; }
+body.dark-mode .nav-links a:hover { background: #161b22; color: #e6edf3; }
+body.dark-mode .dropdown-content {
+  background: #1c2128 !important;
+  border-color: #30363d !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4) !important;
+}
+body.dark-mode .dropdown-content a {
+  color: #8b949e !important;
+  border-color: #30363d !important;
+}
+body.dark-mode .dropdown-content a:hover {
+  background: #161b22 !important; color: #e6edf3 !important;
+}
+body.dark-mode .theme-toggle-btn {
+  background: #161b22; border-color: #30363d; color: #f0c040;
+}
+body.dark-mode .theme-toggle-btn:hover {
+  background: var(--accent); border-color: var(--accent); color: white; transform: rotate(-20deg) scale(1.08);
+}
+
+/* Hero dark */
+body.dark-mode .hero { background: #0d1117; }
+body.dark-mode .hero::before { opacity: 0.35; }
+body.dark-mode .hero::after {
+  background: linear-gradient(
+    180deg,
+    rgba(13,17,23,0.60) 0%,
+    rgba(13,17,23,0.35) 40%,
+    rgba(13,17,23,0.60) 100%
+  );
+}
+body.dark-mode .hero-badge {
+  background: #161b22; border-color: #30363d; color: #cdd9e5;
+}
+body.dark-mode .hero h1 { color: #e6edf3; }
+body.dark-mode .hero p { color: #8b949e; }
+body.dark-mode .preview-frame { background: #1c2128; border-color: #30363d; }
+body.dark-mode .preview-bar { background: #161b22; border-color: #30363d; }
+body.dark-mode .preview-stat { background: #161b22; }
+body.dark-mode .preview-stat .pval { color: #e6edf3; }
+body.dark-mode .preview-chart { background: #161b22; }
+body.dark-mode .preview-bar-item { background: var(--accent); }
+
+/* Stats strip dark */
+body.dark-mode .stats-strip {
+  background: #0d1117; border-color: #30363d;
+}
+body.dark-mode .strip-stat .snum { color: #e6edf3; }
+body.dark-mode .strip-stat .slbl { color: #8b949e; }
+body.dark-mode .strip-stat .sicon { color: #8b949e; }
+
+/* Feature cards dark */
+body.dark-mode .feature-card {
+  background: #1c2128; border-color: #30363d;
+}
+body.dark-mode .feature-card:hover { border-color: #8b949e; }
+body.dark-mode .feature-card h3 { color: #e6edf3; }
+body.dark-mode .feature-card p { color: #8b949e; }
+body.dark-mode .section-title { color: #e6edf3; }
+body.dark-mode .section-sub { color: #8b949e; }
+
+/* How it works dark */
+body.dark-mode .how-section {
+  background: #161b22; border-color: #30363d;
+}
+body.dark-mode .step-item h4 { color: #e6edf3; }
+body.dark-mode .step-item p { color: #8b949e; }
+body.dark-mode .steps-grid::before { background: #30363d; }
+
+/* Split section dark */
+body.dark-mode .split-section { background: #1c2128 !important; }
+body.dark-mode .split-content h2 { color: #e6edf3; }
+body.dark-mode .feature-list-icon { background: #161b22; color: #e6edf3; }
+body.dark-mode .feature-list-item h5 { color: #e6edf3; }
+body.dark-mode .feature-list-item p { color: #8b949e; }
+
+/* Testimonials dark */
+body.dark-mode .testi-section { background: #0d1117; }
+body.dark-mode .testi-card { background: #1c2128; border-color: #30363d; }
+body.dark-mode .testi-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+body.dark-mode .testi-text { color: #8b949e; }
+body.dark-mode .testi-name { color: #e6edf3; }
+body.dark-mode .testi-role { color: #8b949e; }
+
+/* Features section bg dark */
+body.dark-mode .features-section { background: #0d1117; }
 
 /* ============================================================
    LAYOUT — Sidebar + Content
