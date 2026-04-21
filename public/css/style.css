@@ -331,10 +331,11 @@ h3 { font-size: 1.25rem; }
 .theme-toggle-btn i { transition: all 0.3s ease; }
 
 /* ============================================================
-   DARK MODE — Landing Page
+   DARK MODE — Landing Page & App
    ============================================================ */
-body.dark-mode,
-body.dark-mode.landing-page {
+.dark-mode,
+.dark-mode body,
+.dark-mode.landing-page body {
   --bg-primary: #0d1117;
   --bg-secondary: #161b22;
   --bg-card: #1c2128;
@@ -349,37 +350,37 @@ body.dark-mode.landing-page {
 }
 
 /* Navbar dark */
-body.dark-mode .navbar {
+.dark-mode .navbar {
   background: #0d1117;
   border-bottom-color: #30363d;
   box-shadow: 0 1px 0 #30363d;
 }
-body.dark-mode .brand { color: #e6edf3; }
-body.dark-mode .nav-links a { color: #8b949e; }
-body.dark-mode .nav-links a:hover { background: #161b22; color: #e6edf3; }
-body.dark-mode .dropdown-content {
+.dark-mode .brand { color: #e6edf3; }
+.dark-mode .nav-links a { color: #8b949e; }
+.dark-mode .nav-links a:hover { background: #161b22; color: #e6edf3; }
+.dark-mode .dropdown-content {
   background: #1c2128 !important;
   border-color: #30363d !important;
   box-shadow: 0 8px 24px rgba(0,0,0,0.4) !important;
 }
-body.dark-mode .dropdown-content a {
+.dark-mode .dropdown-content a {
   color: #8b949e !important;
   border-color: #30363d !important;
 }
-body.dark-mode .dropdown-content a:hover {
+.dark-mode .dropdown-content a:hover {
   background: #161b22 !important; color: #e6edf3 !important;
 }
-body.dark-mode .theme-toggle-btn {
+.dark-mode .theme-toggle-btn {
   background: #161b22; border-color: #30363d; color: #f0c040;
 }
-body.dark-mode .theme-toggle-btn:hover {
+.dark-mode .theme-toggle-btn:hover {
   background: var(--accent); border-color: var(--accent); color: white; transform: rotate(-20deg) scale(1.08);
 }
 
 /* Hero dark */
-body.dark-mode .hero { background: #0d1117; }
-body.dark-mode .hero::before { opacity: 0.35; }
-body.dark-mode .hero::after {
+.dark-mode .hero { background: #0d1117; }
+.dark-mode .hero::before { opacity: 0.35; }
+.dark-mode .hero::after {
   background: linear-gradient(
     180deg,
     rgba(13,17,23,0.60) 0%,
@@ -387,61 +388,61 @@ body.dark-mode .hero::after {
     rgba(13,17,23,0.60) 100%
   );
 }
-body.dark-mode .hero-badge {
+.dark-mode .hero-badge {
   background: #161b22; border-color: #30363d; color: #cdd9e5;
 }
-body.dark-mode .hero h1 { color: #e6edf3; }
-body.dark-mode .hero p { color: #8b949e; }
-body.dark-mode .preview-frame { background: #1c2128; border-color: #30363d; }
-body.dark-mode .preview-bar { background: #161b22; border-color: #30363d; }
-body.dark-mode .preview-stat { background: #161b22; }
-body.dark-mode .preview-stat .pval { color: #e6edf3; }
-body.dark-mode .preview-chart { background: #161b22; }
-body.dark-mode .preview-bar-item { background: var(--accent); }
+.dark-mode .hero h1 { color: #e6edf3; }
+.dark-mode .hero p { color: #8b949e; }
+.dark-mode .preview-frame { background: #1c2128; border-color: #30363d; }
+.dark-mode .preview-bar { background: #161b22; border-color: #30363d; }
+.dark-mode .preview-stat { background: #161b22; }
+.dark-mode .preview-stat .pval { color: #e6edf3; }
+.dark-mode .preview-chart { background: #161b22; }
+.dark-mode .preview-bar-item { background: var(--accent); }
 
 /* Stats strip dark */
-body.dark-mode .stats-strip {
+.dark-mode .stats-strip {
   background: #0d1117; border-color: #30363d;
 }
-body.dark-mode .strip-stat .snum { color: #e6edf3; }
-body.dark-mode .strip-stat .slbl { color: #8b949e; }
-body.dark-mode .strip-stat .sicon { color: #8b949e; }
+.dark-mode .strip-stat .snum { color: #e6edf3; }
+.dark-mode .strip-stat .slbl { color: #8b949e; }
+.dark-mode .strip-stat .sicon { color: #8b949e; }
 
 /* Feature cards dark */
-body.dark-mode .feature-card {
+.dark-mode .feature-card {
   background: #1c2128; border-color: #30363d;
 }
-body.dark-mode .feature-card:hover { border-color: #8b949e; }
-body.dark-mode .feature-card h3 { color: #e6edf3; }
-body.dark-mode .feature-card p { color: #8b949e; }
-body.dark-mode .section-title { color: #e6edf3; }
-body.dark-mode .section-sub { color: #8b949e; }
+.dark-mode .feature-card:hover { border-color: #8b949e; }
+.dark-mode .feature-card h3 { color: #e6edf3; }
+.dark-mode .feature-card p { color: #8b949e; }
+.dark-mode .section-title { color: #e6edf3; }
+.dark-mode .section-sub { color: #8b949e; }
 
 /* How it works dark */
-body.dark-mode .how-section {
+.dark-mode .how-section {
   background: #161b22; border-color: #30363d;
 }
-body.dark-mode .step-item h4 { color: #e6edf3; }
-body.dark-mode .step-item p { color: #8b949e; }
-body.dark-mode .steps-grid::before { background: #30363d; }
+.dark-mode .step-item h4 { color: #e6edf3; }
+.dark-mode .step-item p { color: #8b949e; }
+.dark-mode .steps-grid::before { background: #30363d; }
 
 /* Split section dark */
-body.dark-mode .split-section { background: #1c2128 !important; }
-body.dark-mode .split-content h2 { color: #e6edf3; }
-body.dark-mode .feature-list-icon { background: #161b22; color: #e6edf3; }
-body.dark-mode .feature-list-item h5 { color: #e6edf3; }
-body.dark-mode .feature-list-item p { color: #8b949e; }
+.dark-mode .split-section { background: #1c2128 !important; }
+.dark-mode .split-content h2 { color: #e6edf3; }
+.dark-mode .feature-list-icon { background: #161b22; color: #e6edf3; }
+.dark-mode .feature-list-item h5 { color: #e6edf3; }
+.dark-mode .feature-list-item p { color: #8b949e; }
 
 /* Testimonials dark */
-body.dark-mode .testi-section { background: #0d1117; }
-body.dark-mode .testi-card { background: #1c2128; border-color: #30363d; }
-body.dark-mode .testi-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
-body.dark-mode .testi-text { color: #8b949e; }
-body.dark-mode .testi-name { color: #e6edf3; }
-body.dark-mode .testi-role { color: #8b949e; }
+.dark-mode .testi-section { background: #0d1117; }
+.dark-mode .testi-card { background: #1c2128; border-color: #30363d; }
+.dark-mode .testi-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+.dark-mode .testi-text { color: #8b949e; }
+.dark-mode .testi-name { color: #e6edf3; }
+.dark-mode .testi-role { color: #8b949e; }
 
 /* Features section bg dark */
-body.dark-mode .features-section { background: #0d1117; }
+.dark-mode .features-section { background: #0d1117; }
 
 /* ============================================================
    LAYOUT — Sidebar + Content

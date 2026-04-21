@@ -364,4 +364,38 @@ document.addEventListener('DOMContentLoaded', () => {
       if (target) target.scrollIntoView({ behavior: 'smooth' });
     });
   });
+
+  // Theme Toggle Logic (Global)
+  const themeToggleBtns = document.querySelectorAll('.theme-toggle-btn');
+  
+  // Set initial icon based on current class
+  const isDark = document.documentElement.classList.contains('dark-mode');
+  themeToggleBtns.forEach(btn => {
+    const icon = btn.querySelector('i');
+    if (icon) {
+      icon.classList.remove(isDark ? 'fa-moon' : 'fa-sun');
+      icon.classList.add(isDark ? 'fa-sun' : 'fa-moon');
+    }
+  });
+
+  themeToggleBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.documentElement.classList.toggle('dark-mode');
+      const currentlyDark = document.documentElement.classList.contains('dark-mode');
+      
+      if (currentlyDark) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.setItem('theme', 'light');
+      }
+
+      // Update all toggle buttons
+      document.querySelectorAll('.theme-toggle-btn i').forEach(icon => {
+        icon.classList.remove(currentlyDark ? 'fa-moon' : 'fa-sun');
+        icon.classList.add(currentlyDark ? 'fa-sun' : 'fa-moon');
+      });
+    });
+  });
 });
