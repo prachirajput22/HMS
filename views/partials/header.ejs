@@ -14,7 +14,13 @@
     // Restore theme before paint to prevent flash
     (function() {
       const saved = localStorage.getItem('theme');
-      if (saved) document.documentElement.setAttribute('data-theme', saved);
+      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (saved === 'dark' || (!saved && systemDark)) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        document.documentElement.classList.add('dark-mode');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
     })();
   </script>
 </head>
