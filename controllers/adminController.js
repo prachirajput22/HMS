@@ -1,6 +1,6 @@
-// ============================================================
+
 // Admin Controller — Dashboard, Profile, Rooms, Allocation, Payments, Search
-// ============================================================
+
 const Admin = require('../models/Admin');
 const User = require('../models/User');
 const Room = require('../models/Room');
@@ -8,7 +8,7 @@ const Fee = require('../models/Fee');
 const Complaint = require('../models/Complaint');
 const Feedback = require('../models/Feedback');
 const Notification = require('../models/Notification');
-const { findBestRoom, getRoomSuggestions, calculateMatchScore } = require('../utils/smartMatch');
+const { findBestRoom, getRoomSuggestions, calculateMatchScore, compatibilityPercentage } = require('../utils/smartMatch');
 
 // ===================== DASHBOARD =====================
 exports.getDashboard = async (req, res) => {
@@ -113,7 +113,7 @@ exports.updateProfile = async (req, res) => {
 exports.getRooms = async (req, res) => {
   try {
     const admin = await Admin.findById(req.session.adminId);
-    const rooms = await Room.find().populate('occupants', 'name email').sort({ roomNumber: 1 });
+    const rooms = await Room.find().populate('occupants', 'name email preferences').sort({ roomNumber: 1 });
 
     const stats = {
       total: rooms.length,
@@ -122,10 +122,30 @@ exports.getRooms = async (req, res) => {
       maintenance: rooms.filter((r) => r.status === 'Maintenance').length,
     };
 
+    const roomsData = rooms.map(room => {
+      const rData = room.toObject();
+      if (rData.occupants && rData.occupants.length > 1) {
+        let totalPairs = 0;
+        let totalScore = 0;
+        for (let i = 0; i < rData.occupants.length; i++) {
+          for (let j = i + 1; j < rData.occupants.length; j++) {
+            if (rData.occupants[i].preferences && rData.occupants[j].preferences) {
+              totalScore += compatibilityPercentage(rData.occupants[i].preferences, rData.occupants[j].preferences);
+              totalPairs++;
+            }
+          }
+        }
+        rData.matchPercentage = totalPairs > 0 ? Math.round(totalScore / totalPairs) : null;
+      } else {
+        rData.matchPercentage = null;
+      }
+      return rData;
+    });
+
     res.render('admin/rooms', {
       title: 'Room Management',
       admin,
-      rooms,
+      rooms: roomsData,
       stats,
       errors: req.flash('error'),
       success: req.flash('success'),

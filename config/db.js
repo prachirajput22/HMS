@@ -1,6 +1,4 @@
-// ============================================================
-// Database Connection Configuration
-// ============================================================
+
 const mongoose = require('mongoose');
 
 const connectDB = async () => {

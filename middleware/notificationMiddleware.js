@@ -1,7 +1,4 @@
-// ============================================================
-// Notification Middleware — injects user notifications into res.locals
-// so topbar.ejs and sidebar.ejs always have them available
-// ============================================================
+
 const Notification = require('../models/Notification');
 
 const injectUserNotifications = async (req, res, next) => {

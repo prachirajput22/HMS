@@ -150,6 +150,9 @@
 
               <!-- Actions -->
               <div class="room-pro-actions">
+                <button class="btn btn-sm" style="background-color: #17a2b8; color: white; border: none;" onclick="openAboutModal('<%= room._id %>')">
+                  <i class="fas fa-info-circle"></i> About
+                </button>
                 <button class="btn btn-sm btn-secondary"
                   onclick="openEditModal({
                     id:'<%= room._id %>',
@@ -296,14 +299,88 @@
         </div>
       </div>
 
+      <!-- About Room Modal -->
+      <div id="aboutRoomModal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width:520px;">
+          <div class="modal-header">
+            <h3><i class="fas fa-info-circle" style="color:var(--primary)"></i> Room <span id="aboutRoomNumber"></span> Details</h3>
+            <button class="modal-close" onclick="closeModal('aboutRoomModal')">&times;</button>
+          </div>
+          <div class="modal-body" style="padding-top: 15px;">
+            <div id="aboutMatchScore" class="mb-3"></div>
+            <h4 style="margin-bottom: 12px; font-size: 1.1rem; color: var(--text-main);"><i class="fas fa-users"></i> Allocated Students</h4>
+            <ul id="aboutOccupantsList" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px;"></ul>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
 <%- include('../partials/footer') %>
 
 <script>
+const allRoomsData = <%- JSON.stringify(rooms) %>;
+
 function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
 function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+function openAboutModal(roomId) {
+  const room = allRoomsData.find(r => r._id === roomId);
+  if (!room) return;
+
+  document.getElementById('aboutRoomNumber').innerText = room.roomNumber;
+  
+  const matchScoreDiv = document.getElementById('aboutMatchScore');
+  if (room.matchPercentage !== null) {
+    matchScoreDiv.innerHTML = `<div style="background: rgba(23, 162, 184, 0.1); color: #17a2b8; padding: 12px; border-radius: 8px; border: 1px solid #17a2b8; display: flex; align-items: center; gap: 10px; font-weight: bold; margin-bottom: 15px;">
+      <i class="fas fa-percentage" style="font-size: 1.2rem;"></i>
+      <span>Mutual Match: ${room.matchPercentage}%</span>
+    </div>`;
+  } else {
+    matchScoreDiv.innerHTML = `<div style="background: var(--bg-secondary); color: var(--text-muted); padding: 10px; border-radius: 8px; font-size: 0.9rem; margin-bottom: 15px;">
+      <i class="fas fa-info-circle"></i> Not enough occupants for mutual match calculation.
+    </div>`;
+  }
+
+  const occupantsList = document.getElementById('aboutOccupantsList');
+  occupantsList.innerHTML = '';
+  if (room.occupants && room.occupants.length > 0) {
+    room.occupants.forEach(occ => {
+      let prefsHTML = '';
+      if (occ.preferences) {
+         prefsHTML = `
+           <div style="display: flex; gap: 10px; margin-top: 8px; font-size: 0.85rem; color: var(--text-muted);">
+             <span title="Sleep Schedule"><i class="fas fa-moon"></i> ${occ.preferences.sleepSchedule || 'N/A'}</span>
+             <span title="Food Preference"><i class="fas fa-utensils"></i> ${occ.preferences.food || 'N/A'}</span>
+             <span title="Lifestyle"><i class="fas fa-running"></i> ${occ.preferences.lifestyle || 'N/A'}</span>
+           </div>
+         `;
+      } else {
+         prefsHTML = `<div style="margin-top: 8px; font-size: 0.85rem; color: var(--text-muted);">No preferences set</div>`;
+      }
+      
+      occupantsList.innerHTML += `
+        <li style="padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-card);">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 35px; height: 35px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.1rem; flex-shrink: 0;">
+              ${occ.name.charAt(0).toUpperCase()}
+            </div>
+            <div style="overflow: hidden; text-overflow: ellipsis;">
+              <div style="font-weight: bold; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${occ.name}</div>
+              <div style="font-size: 0.85rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${occ.email}</div>
+            </div>
+          </div>
+          ${prefsHTML}
+        </li>
+      `;
+    });
+  } else {
+    occupantsList.innerHTML = `<li style="padding: 15px; text-align: center; color: var(--text-muted); border: 1px dashed var(--border-color); border-radius: 8px;">No occupants currently.</li>`;
+  }
+  
+  openModal('aboutRoomModal');
+}
 
 function openEditModal(data) {
   document.getElementById('editRoomForm').action = '/admin/rooms/' + data.id + '/update';

@@ -1,7 +1,4 @@
-// ============================================================
-// MITS Hostel Room Allocation & Fee Management System
-// Main Application Entry Point
-// ============================================================
+
 require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
@@ -81,7 +78,7 @@ app.use((err, req, res, next) => {
   res.status(500).render('error', { title: 'Error', message: err.message });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3006;
 app.listen(PORT, () => {
   console.log(`🚀 MITS Hostel Management System running at http://localhost:${PORT}`);
 });

@@ -1,6 +1,6 @@
-// ============================================================
+
 // Attendance Controller — Daily attendance by admin
-// ============================================================
+
 const Attendance = require('../models/Attendance');
 const User = require('../models/User');
 const Admin = require('../models/Admin');
